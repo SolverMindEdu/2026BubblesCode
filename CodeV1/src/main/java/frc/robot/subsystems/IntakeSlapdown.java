@@ -7,24 +7,33 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class IntakeSlapdown extends SubsystemBase {
-  private final TalonFX motor = new TalonFX(13, "rio");
-
+  private final TalonFX motor = new TalonFX(Constants.CAN.INTAKE_SLAPDOWN, "rio");
   private final MotionMagicVoltage mmRequest = new MotionMagicVoltage(0);
 
-  // Tune these on-robot
+  // LIMITS!!!!
+  // hehehe i love moi girlfrend :3
+  public static final double UP_LIMIT_ROT = 0.0;     // highest it can go
+  public static final double DOWN_LIMIT_ROT = 18.5;  // lowest it can go
+
+  // Setpoints
+  public static final double UP_ROT = 0.0;
+  public static final double DOWN_ROT = 18.5;
+
+  // tune for PID
   private static final double kP = 20.0;
   private static final double kI = 0.0;
   private static final double kD = 0.3;
 
-  // "Very slow" Motion Magic profile (rotations/sec, rotations/sec^2)
-  // Start conservative, then speed up if needed.
+  // tune speed for motion magic
   private static final double CRUISE_VEL_RPS = 30.0;
   private static final double ACCEL_RPS2 = 50.0;
 
-  // Finish tolerance
+  // tolerance
   private static final double TOLERANCE_ROT = 0.05;
 
   public IntakeSlapdown() {
@@ -41,14 +50,23 @@ public class IntakeSlapdown extends SubsystemBase {
 
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    // If direction is backwards, flip this (or swap to CounterClockwise_Positive)
-    cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    // Down is positive up is negative
+    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     motor.getConfigurator().apply(cfg);
   }
 
-  public void goToRotations(double rotations) {
-    motor.setControl(mmRequest.withPosition(rotations));
+  public void goToRotations(double requestedRotations) {
+    double clamped = MathUtil.clamp(requestedRotations, UP_LIMIT_ROT, DOWN_LIMIT_ROT);
+    motor.setControl(mmRequest.withPosition(clamped));
+  }
+
+  public void up() {
+    goToRotations(UP_ROT);
+  }
+
+  public void down() {
+    goToRotations(DOWN_ROT);
   }
 
   public double getPositionRotations() {
@@ -56,7 +74,16 @@ public class IntakeSlapdown extends SubsystemBase {
   }
 
   public boolean atSetpoint(double targetRotations) {
-    return Math.abs(getPositionRotations() - targetRotations) <= TOLERANCE_ROT;
+    double clamped = MathUtil.clamp(targetRotations, UP_LIMIT_ROT, DOWN_LIMIT_ROT);
+    return Math.abs(getPositionRotations() - clamped) <= TOLERANCE_ROT;
+  }
+
+  public boolean isUp() {
+    return atSetpoint(UP_ROT);
+  }
+
+  public boolean isDown() {
+    return atSetpoint(DOWN_ROT);
   }
 
   public void stop() {

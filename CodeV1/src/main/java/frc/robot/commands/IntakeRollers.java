@@ -1,14 +1,14 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.RollerSubsystem;
+import frc.robot.subsystems.IntakeRollerSubsystem;
 
-public class RunRollers extends Command {
+public class IntakeRollers extends Command {
 
-    private final RollerSubsystem rollers;
+    private final IntakeRollerSubsystem rollers;
     private final double speed;
 
-    public RunRollers(RollerSubsystem rollers, double speed) {
+    public IntakeRollers(IntakeRollerSubsystem rollers, double speed) {
         this.rollers = rollers;
         this.speed = speed;
         addRequirements(rollers);
@@ -16,7 +16,11 @@ public class RunRollers extends Command {
 
     @Override
     public void initialize() {
-        rollers.runPercent(speed);  // percent output
+        rollers.runIntake(speed); 
+    }
+
+    @Override
+    public void execute() {
     }
 
     @Override
@@ -26,6 +30,6 @@ public class RunRollers extends Command {
 
     @Override
     public boolean isFinished() {
-        return false;  // runs until button released
+        return false; 
     }
 }

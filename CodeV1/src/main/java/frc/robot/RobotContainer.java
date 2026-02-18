@@ -14,15 +14,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.SlapdownToRotationsMM;
-import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.IntakeRollerSubsystem;
 import frc.robot.subsystems.IntakeSlapdown;
-import frc.robot.subsystems.RollerSubsystem;
+import frc.robot.subsystems.FullSubsystems.Intake;
 
 public class RobotContainer {
-    private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = 1.0 * Constants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -35,11 +33,11 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(0);
-
+    
+    public final CommandSwerveDrivetrain drivetrain = Constants.createDrivetrain();
     private final IntakeSlapdown slapdown = new IntakeSlapdown();
-    private final RollerSubsystem rollers = new RollerSubsystem();
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    private boolean isDown = false;
+    private final IntakeRollerSubsystem rollers = new IntakeRollerSubsystem();
+    private final Intake intake = new Intake(slapdown, rollers);
 
     public RobotContainer() {
         configureBindings();
@@ -64,43 +62,14 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
-        ));
+        joystick.leftTrigger().onTrue(intake.toggle());
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        joystick.leftTrigger().onTrue(
-            Commands.runOnce(() -> {
-
-                if (!isDown) {
-                    // GO DOWN
-                    slapdown.goToRotations(-18.5);
-                    rollers.runPercent(-0.8);   // start rollers
-                } else {
-                    // GO UP
-                    slapdown.goToRotations(0.0);
-                    rollers.stop();            // stop rollers
-                }
-
-                isDown = !isDown;
-
-            }, slapdown, rollers)
-        );
-
         // Reset the field-centric heading on left bumper press.
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
-    }
-
-    public Command slapDown() {
-        return new SlapdownToRotationsMM(slapdown, -15.0); // change 6.0 to your real down value
-    }
-
-    public Command slapUp() {
-        return new SlapdownToRotationsMM(slapdown, 0.0);
     }
 
     public Command getAutonomousCommand() {
