@@ -14,7 +14,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
 
     private final TalonFX roller = new TalonFX(Constants.CAN.INTAKE_ROLLERS, "rio");
     private final DutyCycleOut percentRequest = new DutyCycleOut(0);
-    private double requestedPercent = 0.0;   // what your code wants (example: -0.7)
+    private double requestedPercent = 0.0;
     private boolean enabled = false;
 
     // Anti-Jam system
@@ -24,11 +24,11 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     private static final double JAM_DEBOUNCE_SEC = 0.10;      // must be jammed for this long
 
     // Clear jam
-    private static final double UNJAM_REVERSE_PERCENT = 0.55; // tune, reverse power magnitude
-    private static final double UNJAM_MIN_SEC = 0.1;         // minimum reverse burst
-    private static final double UNJAM_MAX_SEC = 0.4;         // max reverse burst
+    private static final double UNJAM_REVERSE_PERCENT = 0.55; // tune
+    private static final double UNJAM_MIN_SEC = 0.1;         // min
+    private static final double UNJAM_MAX_SEC = 0.4;         // max
 
-    // Cooldown to prevent rapid flip-flop
+    // Cooldown
     private static final double COOLDOWN_SEC = 0.10;
 
     private enum Mode { IDLE, RUNNING, UNJAMMING, COOLDOWN }
@@ -43,7 +43,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
 
         cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-        // Keep or flip depending on your wiring. You already set this.
+        // flip
         cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         roller.getConfigurator().apply(cfg);
@@ -53,11 +53,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
         cooldownTimer.stop();
     }
 
-    // =============================
-    // Public API
-    // =============================
-
-    /** Start rollers with anti-jam enabled. Example: runIntake(-0.7). */
+    // start roller and activate anti jam
     public void runIntake(double percent) {
         requestedPercent = percent;
         enabled = true;
@@ -67,7 +63,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
         }
     }
 
-    /** Stops roller and disables anti-jam. */
+    // stop roller and disable anti jam
     public void stop() {
         enabled = false;
         requestedPercent = 0.0;
@@ -80,21 +76,17 @@ public class IntakeRollerSubsystem extends SubsystemBase {
         setPercent(0.0);
     }
 
-    /** Optional: use this if you want to run without anti-jam logic. */
+    // no antijam
     public void runPercentRaw(double percent) {
-        enabled = false; // bypass state machine
+        enabled = false;
         requestedPercent = percent;
         mode = Mode.IDLE;
         setPercent(percent);
     }
 
-    // =============================
-    // Core logic
-    // =============================
-
     @Override
     public void periodic() {
-        // If not enabled, do nothing (unless raw caller is driving it)
+        // If not enabled do nothing
         if (!enabled) return;
 
         double statorCurrent = roller.getStatorCurrent().getValueAsDouble(); // amps
@@ -102,24 +94,20 @@ public class IntakeRollerSubsystem extends SubsystemBase {
 
         boolean tryingToMove = Math.abs(requestedPercent) > 0.05;
 
-        // Only detect jams while trying to intake/outtake (not when stopped)
+        // only detect jams while intake not when stopped
         boolean jamCondition = tryingToMove
                 && (statorCurrent >= JAM_STATOR_CURRENT_A)
                 && (velocityRps <= JAM_VELOCITY_RPS);
 
         switch (mode) {
             case RUNNING -> {
-                // Apply requested direction continuously
                 setPercent(requestedPercent);
-
-                // Debounce jam detection
                 if (jamCondition) {
                     if (!jamTimer.isRunning()) {
                         jamTimer.reset();
                         jamTimer.start();
                     }
                     if (jamTimer.hasElapsed(JAM_DEBOUNCE_SEC)) {
-                        // Start unjam
                         jamTimer.stop();
                         jamTimer.reset();
 
@@ -127,11 +115,9 @@ public class IntakeRollerSubsystem extends SubsystemBase {
                         unjamTimer.reset();
                         unjamTimer.start();
 
-                        // Reverse opposite of requested direction
                         setPercent(-Math.signum(requestedPercent) * UNJAM_REVERSE_PERCENT);
                     }
                 } else {
-                    // clear timer if not jammy
                     if (jamTimer.isRunning()) {
                         jamTimer.stop();
                         jamTimer.reset();
@@ -140,12 +126,8 @@ public class IntakeRollerSubsystem extends SubsystemBase {
             }
 
             case UNJAMMING -> {
-                // Keep reversing
                 setPercent(-Math.signum(requestedPercent) * UNJAM_REVERSE_PERCENT);
 
-                // Decide when to stop unjamming:
-                // 1) at least UNJAM_MIN_SEC
-                // 2) either jam condition is gone OR we hit UNJAM_MAX_SEC
                 boolean minDone = unjamTimer.hasElapsed(UNJAM_MIN_SEC);
                 boolean maxDone = unjamTimer.hasElapsed(UNJAM_MAX_SEC);
 
@@ -158,9 +140,6 @@ public class IntakeRollerSubsystem extends SubsystemBase {
                     mode = Mode.COOLDOWN;
                     cooldownTimer.reset();
                     cooldownTimer.start();
-
-                    // Resume requested direction immediately after cooldown begins
-                    // (or you can resume right away, but cooldown helps avoid flip-flop)
                     setPercent(requestedPercent);
                 }
             }
