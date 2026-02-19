@@ -18,20 +18,20 @@ public class IntakeSlapdown extends SubsystemBase {
   // LIMITS!!!!
   // hehehe i love moi girlfrend :3
   public static final double UP_LIMIT_ROT = 0.0;     // highest it can go
-  public static final double DOWN_LIMIT_ROT = 18.5;  // lowest it can go
+  public static final double DOWN_LIMIT_ROT = 15.5;  // lowest it can go
 
   // Setpoints
-  public static final double UP_ROT = 0.0;
-  public static final double DOWN_ROT = 18.5;
+  public static final double UP_ROT = 0.2;
+  public static final double DOWN_ROT = 15.5;
 
   // tune for PID
-  private static final double kP = 20.0;
+  private static final double kP = 10.5;
   private static final double kI = 0.0;
-  private static final double kD = 0.3;
+  private static final double kD = 0.1;
 
   // tune speed for motion magic
-  private static final double CRUISE_VEL_RPS = 30.0;
-  private static final double ACCEL_RPS2 = 50.0;
+  private static final double CRUISE_VEL_RPS = 50.0;
+  private static final double ACCEL_RPS2 = 70.0;
 
   // tolerance
   private static final double TOLERANCE_ROT = 0.05;
