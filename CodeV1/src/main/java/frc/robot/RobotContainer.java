@@ -18,6 +18,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeRollerSubsystem;
 import frc.robot.subsystems.IntakeSlapdown;
 import frc.robot.subsystems.FullSubsystems.Intake;
+import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.KickerSubsystem;
 
 public class RobotContainer {
     private double MaxSpeed = 1.0 * Constants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -38,6 +40,8 @@ public class RobotContainer {
     private final IntakeSlapdown slapdown = new IntakeSlapdown();
     private final IntakeRollerSubsystem rollers = new IntakeRollerSubsystem();
     private final Intake intake = new Intake(slapdown, rollers);
+    private final ShooterSubsystem shooter = new ShooterSubsystem();
+    private final KickerSubsystem kicker = new KickerSubsystem();
 
     public RobotContainer() {
         configureBindings();
@@ -62,7 +66,24 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
+        //Intake
         joystick.leftTrigger().onTrue(intake.toggle());
+
+        joystick.rightTrigger().whileTrue(
+            Commands.startEnd(
+                () -> shooter.run(0.8),
+                shooter::stop,
+                shooter
+            )
+        );
+
+        joystick.a().whileTrue(
+            Commands.startEnd(
+                () -> kicker.run(0.9),
+                kicker::stop,
+                kicker
+            )
+        );
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.

@@ -287,5 +287,11 @@ public class Constants {
         //Intake
         public static final int INTAKE_ROLLERS = 11;
         public static final int INTAKE_SLAPDOWN = 13;
+
+        //Shooter
+        public static final int SHOOTER_LEFT = 17;
+        public static final int SHOOTER_MIDDLE = 16;
+        public static final int SHOOTER_RIGHT = 12;
+        public static final int KICKER_MOTOR = 15;
     }
 }

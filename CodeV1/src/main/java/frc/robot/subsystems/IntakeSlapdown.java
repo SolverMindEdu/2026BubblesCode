@@ -22,7 +22,7 @@ public class IntakeSlapdown extends SubsystemBase {
 
   // Setpoints
   public static final double UP_ROT = 0.2;
-  public static final double DOWN_ROT = 15.5;
+  public static final double DOWN_ROT = 15;
 
   // tune for PID
   private static final double kP = 10.5;
