@@ -19,10 +19,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public ShooterSubsystem() {
         TalonFXConfiguration cfg = new TalonFXConfiguration();
-        cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast; // shooters usually coast
+        cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast; // shooters coast
 
-        // Configure each motor separately (same cfg object is fine)
-        // Change these 3 lines to match your wiring/direction needs
         cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         shooterLeft.getConfigurator().apply(cfg);
 

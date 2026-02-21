@@ -96,8 +96,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return getState().Speeds;
     }
 
-
-
     public Pose2d getPose() {
         return getState().Pose;
     }    
