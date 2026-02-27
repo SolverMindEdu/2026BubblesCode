@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -25,6 +26,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.TunerSwerveDrivetrain;
+import frc.robot.LimelightHelpers;
+
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -59,6 +62,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+    private boolean visionEnabled = true;
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -278,6 +282,43 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     @Override
     public void periodic() {
+        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+            DriverStation.getAlliance().ifPresent(allianceColor -> {
+                setOperatorPerspectiveForward(
+                    allianceColor == Alliance.Red ? kRedAlliancePerspectiveRotation : kBlueAlliancePerspectiveRotation
+                );
+                m_hasAppliedOperatorPerspective = true;
+            });
+        }
+
+        if (visionEnabled) {
+            // Tell Limelight our current orientation using the public pose getter
+            LimelightHelpers.SetRobotOrientation(
+                "limelight",
+                getState().Pose.getRotation().getDegrees(),  // <-- replaces m_poseEstimator.getEstimatedPosition()...
+                0, 0, 0, 0, 0
+            );
+        
+            // Read latest MegaTag2 estimate
+            LimelightHelpers.PoseEstimate mt2 =
+                LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+        
+            // Reject bad moments: spinning too fast or no tags
+            boolean doRejectUpdate = false;
+            double omegaDegPerSec = Math.toDegrees(getState().Speeds.omegaRadiansPerSecond);
+        
+            if (Math.abs(omegaDegPerSec) > 360.0) {
+                doRejectUpdate = true;
+            }
+            if (mt2 == null || mt2.tagCount == 0) {
+                doRejectUpdate = true;
+            }
+        
+            if (!doRejectUpdate) {
+                setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+                addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+            }
+        }    
         /*
          * Periodically try to apply the operator perspective.
          * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.

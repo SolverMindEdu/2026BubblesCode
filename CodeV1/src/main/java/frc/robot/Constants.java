@@ -293,5 +293,8 @@ public class Constants {
         public static final int SHOOTER_MIDDLE = 16;
         public static final int SHOOTER_RIGHT = 12;
         public static final int KICKER_MOTOR = 15;
+
+        //Indexer
+        public static final int INDEXER_MOTOR = 14;
     }
 }

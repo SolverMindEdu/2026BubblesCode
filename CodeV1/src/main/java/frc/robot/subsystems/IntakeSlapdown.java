@@ -16,12 +16,12 @@ public class IntakeSlapdown extends SubsystemBase {
   private final MotionMagicVoltage mmRequest = new MotionMagicVoltage(0);
 
   // LIMITS!!!!
-  // hehehe i love moi girlfrend :3
   public static final double UP_LIMIT_ROT = 0.0;     // highest it can go
   public static final double DOWN_LIMIT_ROT = 15.5;  // lowest it can go
 
   // Setpoints
   public static final double UP_ROT = 0.2;
+  public static final double TRAVEL_ROT = 12;
   public static final double DOWN_ROT = 15;
 
   // tune for PID
@@ -65,6 +65,10 @@ public class IntakeSlapdown extends SubsystemBase {
     goToRotations(UP_ROT);
   }
 
+  public void travel() {
+    goToRotations(TRAVEL_ROT);
+  }
+
   public void down() {
     goToRotations(DOWN_ROT);
   }
@@ -80,6 +84,10 @@ public class IntakeSlapdown extends SubsystemBase {
 
   public boolean isUp() {
     return atSetpoint(UP_ROT);
+  }
+  
+  public boolean isTravel() {
+    return atSetpoint(TRAVEL_ROT);
   }
 
   public boolean isDown() {

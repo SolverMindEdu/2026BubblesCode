@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.Set;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -18,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.io.DriverControlsIO;
 import frc.robot.io.DriverControlsIOReal;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -26,8 +29,10 @@ import frc.robot.subsystems.IntakeSlapdown;
 import frc.robot.subsystems.FullSubsystems.Intake;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.KickerSubsystem;
+import frc.robot.subsystems.IndexerSubsystem;
 import org.littletonrobotics.junction.Logger;
 import frc.robot.io.DriverControlsIOInputsAutoLogged;
+import frc.robot.subsystems.FullSubsystems.Shooter;
 
 public class RobotContainer {
     private double MaxSpeed = 1.0 * Constants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -50,6 +55,10 @@ public class RobotContainer {
     private final Intake intake = new Intake(slapdown, rollers);
     private final ShooterSubsystem shooter = new ShooterSubsystem();
     private final KickerSubsystem kicker = new KickerSubsystem();
+    private final IndexerSubsystem indexer = new IndexerSubsystem();
+
+
+    private final Shooter shooterFull = new frc.robot.subsystems.FullSubsystems.Shooter(shooter, kicker, indexer);
 
     private final DriverControlsIO driverIO = RobotBase.isReal() ? new DriverControlsIOReal(0) : (inputs) -> {};
     private final DriverControlsIOInputsAutoLogged driverInputs = new DriverControlsIOInputsAutoLogged();
@@ -67,8 +76,8 @@ public class RobotContainer {
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(driverInputs.leftY * MaxSpeed * 0.4)
-                    .withVelocityY(-driverInputs.leftX * MaxSpeed * 0.4)
+                drive.withVelocityX(driverInputs.leftY * MaxSpeed * 0.2)
+                    .withVelocityY(-driverInputs.leftX * MaxSpeed * 0.2)
                     .withRotationalRate(-driverInputs.rightX * MaxAngularRate)
             )
         );
@@ -80,24 +89,34 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        //Intake
-        joystick.leftTrigger().onTrue(intake.toggle());
+        Trigger leftTrigger = joystick.leftTrigger();
 
-        joystick.rightTrigger().whileTrue(
-            Commands.startEnd(
-                () -> shooter.run(0.8),
-                shooter::stop,
-                shooter
-            )
+        //intake hold
+        leftTrigger
+            .debounce(0.25)
+            .whileTrue(
+                Commands.defer(
+                    () -> intake.isTravel()
+                        ? intake.goDownAndIntake()
+                        : Commands.none(),
+                    Set.of(intake)
+                )
+            );
+
+        //intake release
+        leftTrigger.onFalse(
+            Commands.defer(() -> {
+                if (intake.getState() == Intake.State.DOWN
+                    || intake.getState() == Intake.State.MOVING) {
+
+                    return intake.stopIntakeAndGoTravel();
+                }
+                return intake.tapToggleUpTravel();
+
+            }, Set.of(intake))
         );
 
-        joystick.a().whileTrue(
-            Commands.startEnd(
-                () -> kicker.run(0.9),
-                kicker::stop,
-                kicker
-            )
-        );
+        joystick.rightTrigger().whileTrue(shooterFull.shootWhileHeld());
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
