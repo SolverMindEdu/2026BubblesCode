@@ -10,6 +10,11 @@ import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.*;
@@ -297,5 +302,23 @@ public class Constants {
 
         //Indexer
         public static final int INDEXER_MOTOR = 14;
+    }
+
+    public static final class fieldPoses {
+        public static final Pose2d blueAllianceHub =
+            new Pose2d(0.0, 0.0, Rotation2d.kZero);
+
+        public static final Pose2d redAllianceHub =
+            new Pose2d(16.54, 0.0, Rotation2d.kZero);
+    }
+
+    public static final Transform3d robotToShooter =
+        new Transform3d(
+            new Translation3d(0.25, 0.0, 0.5),
+            new Rotation3d()
+        );
+
+    public static final class shooterConstants {
+    public static final double hubOffset = 0.0;
     }
 }

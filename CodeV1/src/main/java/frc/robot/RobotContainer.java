@@ -30,6 +30,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeRollerSubsystem;
 import frc.robot.subsystems.IntakeSlapdown;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ShotCalculator;
 import frc.robot.subsystems.KickerSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.HoodSubsystem;
@@ -52,6 +53,7 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = Constants.createDrivetrain();
+    private final ShotCalculator shotCalc = new ShotCalculator(drivetrain);
 
     // Intake
     private final IntakeSlapdown slapdown = new IntakeSlapdown();
@@ -88,6 +90,8 @@ public class RobotContainer {
                     .withRotationalRate(-driverInputs.rightX * MaxAngularRate)
             )
         );
+
+        SmartDashboard.putData("ShotCalculator", shotCalc);
 
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
