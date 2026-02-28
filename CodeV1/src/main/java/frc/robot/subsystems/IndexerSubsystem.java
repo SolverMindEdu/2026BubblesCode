@@ -18,7 +18,7 @@ public class IndexerSubsystem extends SubsystemBase {
     public IndexerSubsystem() {
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         indexermotor.getConfigurator().apply(cfg);
     }
     
