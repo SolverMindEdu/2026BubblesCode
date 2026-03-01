@@ -14,6 +14,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -43,6 +44,9 @@ import frc.robot.subsystems.FullSubsystems.Shooter;
 import org.littletonrobotics.junction.Logger;
 
 public class RobotContainer {
+  private final SlewRateLimiter xLimiter = new SlewRateLimiter(2.5); // m/s^2 equivalent feel
+  private final SlewRateLimiter yLimiter = new SlewRateLimiter(2.5);
+  private final SlewRateLimiter rotLimiter = new SlewRateLimiter(6.0); // rad/s^2 feel
   private final double MaxSpeed = 1.0 * Constants.kSpeedAt12Volts.in(MetersPerSecond);
   private final double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
@@ -50,7 +54,7 @@ public class RobotContainer {
       new SwerveRequest.FieldCentric()
           .withDeadband(MaxSpeed * 0.1)
           .withRotationalDeadband(MaxAngularRate * 0.1)
-          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+          .withDriveRequestType(DriveRequestType.Velocity);
 
   private final Telemetry logger = new Telemetry(MaxSpeed);
   private final CommandXboxController joystick = new CommandXboxController(0);
@@ -83,7 +87,7 @@ public class RobotContainer {
   // Start here, then tune:
   // - If too weak: increase kP
   // - If oscillates: increase kD or lower kP
-  private final PIDController aimThetaPid = new PIDController(2.0, 0.0, 0.15);
+  private final PIDController aimThetaPid = new PIDController(3.0, 0.0, 0.17);
 
   public RobotContainer() {
     aimThetaPid.enableContinuousInput(-Math.PI, Math.PI);
@@ -128,12 +132,21 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+
     drivetrain.setDefaultCommand(
-        drivetrain.applyRequest(
-            () ->
-                drive.withVelocityX(driverInputs.leftY * MaxSpeed * 0.4)
-                    .withVelocityY(-driverInputs.leftX * MaxSpeed * 0.4)
-                    .withRotationalRate(-driverInputs.rightX * MaxAngularRate)));
+    drivetrain.applyRequest(
+        () -> {
+          double xCmd = xLimiter.calculate(driverInputs.leftY) * MaxSpeed * 0.4;
+          double yCmd = yLimiter.calculate(-driverInputs.leftX) * MaxSpeed * 0.4;
+          double rotCmd = rotLimiter.calculate(-driverInputs.rightX) * MaxAngularRate;
+
+          return drive
+              .withVelocityX(xCmd)
+              .withVelocityY(yCmd)
+              .withRotationalRate(rotCmd);
+        }
+    )
+    );
 
     SmartDashboard.putData("ShotCalculator", shotCalc);
 

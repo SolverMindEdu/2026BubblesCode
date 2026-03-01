@@ -77,13 +77,24 @@ public class ShotCalculator extends SubsystemBase {
     // these the real values :coolface:
     // shotHoodAngleMap.put(2.5, Rotation2d.fromDegrees(14)); // distance, angle
     // shotHoodAngleMap.put(3.0, Rotation2d.fromDegrees(14)); // distance, angle
-    shotHoodAngleMap.put(4.8, Rotation2d.fromDegrees(0)); // distance, angle
-    shotHoodAngleMap.put(4.0, Rotation2d.fromDegrees(4)); // distance, angle
-    shotHoodAngleMap.put(3.0, Rotation2d.fromDegrees(15)); // distance, angle
+    shotHoodAngleMap.put(1.9, Rotation2d.fromDegrees(0)); // distance, angle
+    shotHoodAngleMap.put(2.5, Rotation2d.fromDegrees(7)); // distance, angle
+    shotHoodAngleMap.put(3.0, Rotation2d.fromDegrees(8)); // distance, angle
+    shotHoodAngleMap.put(3.3, Rotation2d.fromDegrees(9.5)); // distance, angle
+    shotHoodAngleMap.put(3.5, Rotation2d.fromDegrees(10)); // distance, angle
+    shotHoodAngleMap.put(3.9, Rotation2d.fromDegrees(11.3)); // distance, angle
+    shotHoodAngleMap.put(5.0, Rotation2d.fromDegrees(18.0)); // distance, angle
+    shotHoodAngleMap.put(5.4, Rotation2d.fromDegrees(21.0)); // distance, angle
 
-    shotFlywheelSpeedMap.put(4.8, 50.0); //distance RPS
-    shotFlywheelSpeedMap.put(4.0, 56.0); //distance RPS
-    shotFlywheelSpeedMap.put(3.0, 65.0); //distance RPS
+    shotFlywheelSpeedMap.put(1.9, 49.0); //distance RPS
+    shotFlywheelSpeedMap.put(2.5, 52.0); //distance RPS
+    shotFlywheelSpeedMap.put(3.0, 54.0); //distance RPS
+    shotFlywheelSpeedMap.put(3.3, 55.5); //distance RPS
+    shotFlywheelSpeedMap.put(3.5, 56.0); //distance RPS
+    shotFlywheelSpeedMap.put(3.9, 57.0); //distance RPS
+    shotFlywheelSpeedMap.put(5.0, 64.0); //distance RPS
+    shotFlywheelSpeedMap.put(5.4, 66.0); //distance RPS
+
 
     timeOfFlightMap.put(1.64227, 0.93); //distance,  time
   }

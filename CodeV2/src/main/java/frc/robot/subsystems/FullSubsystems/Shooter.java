@@ -21,8 +21,8 @@ public class Shooter extends SubsystemBase {
   private final HoodSubsystem hood;
   private final ShotCalculator shotCalc;
 
-  private static final double KICKER_PERCENT  = 0.9;
-  private static final double INDEXER_PERCENT = 0.4;
+  private static final double KICKER_PERCENT  = 0.8;
+  private static final double INDEXER_PERCENT = 0.02;
 
   // Fallback if ShotCalculator errors or is not present
   private static final double DEFAULT_TARGET_RPS = 60.0;

@@ -29,13 +29,13 @@ public class Constants {
     // The steer motor uses any SwerveModule.SteerRequestType control request with the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
     private static final Slot0Configs steerGains = new Slot0Configs()
-        .withKP(60).withKI(0).withKD(0.5)
-        .withKS(0.1).withKV(2.49).withKA(0)
+        .withKP(100).withKI(0).withKD(0.2)
+        .withKS(0).withKV(1.5).withKA(0)
         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
     // When using closed-loop control, the drive motor uses the control
     // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
     private static final Slot0Configs driveGains = new Slot0Configs()
-        .withKP(0.2).withKI(0).withKD(0)
+        .withKP(0.1).withKI(0).withKD(0)
         .withKS(0).withKV(0.124);
 
     // The closed-loop output type to use for the steer motors;
@@ -66,7 +66,7 @@ public class Constants {
             new CurrentLimitsConfigs()
                 // Swerve azimuth does not require much torque output, so we can set a relatively low
                 // stator current limit to help avoid brownouts without impacting performance.
-                .withStatorCurrentLimit(Amps.of(60))
+                .withStatorCurrentLimit(Amps.of(50))
                 .withStatorCurrentLimitEnable(true)
         );
     private static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();
@@ -305,12 +305,18 @@ public class Constants {
         public static final int INDEXER_MOTOR = 14;
     }
 
-    public static final class fieldPoses {
-        public static final Pose2d blueAllianceHub =
-            new Pose2d(0.0, 0.0, Rotation2d.kZero);
+    public class fieldPoses{
+        public static final Pose2d blueAllianceHub = new Pose2d(
+            FieldConstants.Hub.topCenterPoint.getX(),
+            FieldConstants.Hub.topCenterPoint.getY(),
+            new Rotation2d()
+        );
 
-        public static final Pose2d redAllianceHub =
-            new Pose2d(16.54, 0.0, Rotation2d.kZero);
+        public static final Pose2d redAllianceHub = new Pose2d(
+            FieldConstants.Hub.oppTopCenterPoint.getX(),
+            FieldConstants.Hub.oppTopCenterPoint.getY(),
+            new Rotation2d()
+        );
     }
 
     public static final Transform3d robotToShooter =
