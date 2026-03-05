@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
@@ -11,23 +7,23 @@ import java.util.Set;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
+
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.io.DriverControlsIO;
 import frc.robot.io.DriverControlsIOReal;
-import frc.robot.io.DriverControlsIOInputsAutoLogged;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeRollerSubsystem;
@@ -41,32 +37,24 @@ import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.FullSubsystems.Intake;
 import frc.robot.subsystems.FullSubsystems.Shooter;
 
-import org.littletonrobotics.junction.Logger;
-
 public class RobotContainer {
-  private final SlewRateLimiter xLimiter = new SlewRateLimiter(2.5); // m/s^2 equivalent feel
-  private final SlewRateLimiter yLimiter = new SlewRateLimiter(2.5);
-  private final SlewRateLimiter rotLimiter = new SlewRateLimiter(6.0); // rad/s^2 feel
   private final double MaxSpeed = 1.0 * Constants.kSpeedAt12Volts.in(MetersPerSecond);
   private final double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
   private final SwerveRequest.FieldCentric drive =
       new SwerveRequest.FieldCentric()
-          .withDeadband(MaxSpeed * 0.1)
-          .withRotationalDeadband(MaxAngularRate * 0.1)
+          .withDeadband(MaxSpeed * 0.10)
+          .withRotationalDeadband(MaxAngularRate * 0.10)
           .withDriveRequestType(DriveRequestType.Velocity);
 
   private final Telemetry logger = new Telemetry(MaxSpeed);
-  private final CommandXboxController joystick = new CommandXboxController(0);
 
   public final CommandSwerveDrivetrain drivetrain = Constants.createDrivetrain();
-
   private final ShotCalculator shotCalc = new ShotCalculator(drivetrain);
 
   // Intake
   private final IntakeSlapdown slapdown = new IntakeSlapdown();
   private final IntakeRollerSubsystem rollers = new IntakeRollerSubsystem();
-  private final Intake intake = new Intake(slapdown, rollers);
 
   // Shooter chain
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
@@ -74,28 +62,70 @@ public class RobotContainer {
   private final IndexerSubsystem indexer = new IndexerSubsystem();
   private final HoodSubsystem hood = new HoodSubsystem();
 
-  private final Shooter shooter = new Shooter(shooterSubsystem, kicker, indexer, hood, shotCalc);
+  private final Shooter shooter =
+      new Shooter(shooterSubsystem, kicker, indexer, hood, shotCalc, slapdown);
 
-  // Driver IO
+  private final Intake intake = new Intake(slapdown, rollers, indexer);
+
   private final DriverControlsIO driverIO =
       RobotBase.isReal() ? new DriverControlsIOReal(0) : (inputs) -> {};
-  private final DriverControlsIOInputsAutoLogged driverInputs = new DriverControlsIOInputsAutoLogged();
+  private final DriverControlsIO.DriverControlsIOInputs driverInputs =
+      new DriverControlsIO.DriverControlsIOInputs();
 
   private final SendableChooser<Command> autoChooser;
-
-  // Auto-aim rotation PID (PathPlanner style)
-  // Start here, then tune:
-  // - If too weak: increase kP
-  // - If oscillates: increase kD or lower kP
-  private final PIDController aimThetaPid = new PIDController(3.0, 0.0, 0.17);
+  private final PIDController aimThetaPid = new PIDController(8.5, 0.0, 0.12);
 
   public RobotContainer() {
-    aimThetaPid.enableContinuousInput(-Math.PI, Math.PI);
-
-    configureBindings();
-
     autoChooser = AutoBuilder.buildAutoChooser();
+    registerNamedCommands();
+    aimThetaPid.enableContinuousInput(-Math.PI, Math.PI);
+    configureBindings();
     SmartDashboard.putData("Auto Chooser", autoChooser);
+    SmartDashboard.putData("ShotCalculator", shotCalc);
+  }
+
+  public void updateDriverInputs() {
+    driverIO.updateInputs(driverInputs);
+  }
+
+  private void registerNamedCommands() {
+    NamedCommands.registerCommand(
+        "IntakeDeploy",
+        Commands.runOnce(slapdown::down, slapdown));
+
+    NamedCommands.registerCommand(
+        "IntakeTravel",
+        Commands.runOnce(slapdown::travel, slapdown));
+    NamedCommands.registerCommand(
+        "RunIntake",
+        Commands.startEnd(
+                () -> {
+                  rollers.runIntakeRps(65.0); 
+                  indexer.run(0.4);
+                },
+                () -> {
+                  rollers.stop();
+                  indexer.stop();
+                },
+                rollers,
+                indexer)
+            .withTimeout(1.0));
+    NamedCommands.registerCommand(
+        "StopIntake",
+        Commands.runOnce(
+            () -> {
+              rollers.stop();
+              indexer.stop();
+            },
+            rollers,
+            indexer));
+
+    NamedCommands.registerCommand(
+        "Shoot",
+        Commands.parallel(
+                shooter.shootWhileHeld(), 
+                autoAimDrive())
+            .withTimeout(3.0));
   }
 
   private Command autoAimDrive() {
@@ -105,56 +135,39 @@ public class RobotContainer {
       double targetRad = p.robotHeadingRadians();
       double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
 
-      SmartDashboard.putNumber("Aim/TargetDeg", Math.toDegrees(targetRad));
-      SmartDashboard.putNumber("Aim/CurrentDeg", Math.toDegrees(currentRad));
+      double xCmd = driverInputs.leftY * MaxSpeed * 0.5;
+      double yCmd = -driverInputs.leftX * MaxSpeed * 0.5;
 
-      // If heading is bad, fall back to driver rotation
       if (!Double.isFinite(targetRad)) {
-        return drive
-            .withVelocityX(driverInputs.leftY * MaxSpeed * 0.4)
-            .withVelocityY(-driverInputs.leftX * MaxSpeed * 0.4)
-            .withRotationalRate(-driverInputs.rightX * MaxAngularRate);
+        double rotCmd = -driverInputs.rightX * MaxAngularRate;
+        return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
       }
-
-      // If your shot heading is 180 off, uncomment this:
-    //   targetRad = MathUtil.angleModulus(targetRad + Math.PI);
 
       double omegaCmd = aimThetaPid.calculate(currentRad, targetRad);
       omegaCmd = MathUtil.clamp(omegaCmd, -MaxAngularRate, MaxAngularRate);
 
-      SmartDashboard.putNumber("Aim/OmegaCmdDegPerSec", Math.toDegrees(omegaCmd));
-
-      return drive
-          .withVelocityX(driverInputs.leftY * MaxSpeed * 0.4)
-          .withVelocityY(-driverInputs.leftX * MaxSpeed * 0.4)
-          .withRotationalRate(omegaCmd);
+      return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(omegaCmd);
     });
   }
 
   private void configureBindings() {
-
     drivetrain.setDefaultCommand(
-    drivetrain.applyRequest(
-        () -> {
-          double xCmd = xLimiter.calculate(driverInputs.leftY) * MaxSpeed * 0.4;
-          double yCmd = yLimiter.calculate(-driverInputs.leftX) * MaxSpeed * 0.4;
-          double rotCmd = rotLimiter.calculate(-driverInputs.rightX) * MaxAngularRate;
+        drivetrain.applyRequest(() -> {
+          double xCmd = driverInputs.leftY * MaxSpeed * 0.4;
+          double yCmd = driverInputs.leftX * MaxSpeed * 0.4;
+          double rotCmd = driverInputs.rightX * MaxAngularRate;
 
-          return drive
-              .withVelocityX(xCmd)
-              .withVelocityY(yCmd)
-              .withRotationalRate(rotCmd);
-        }
-    )
-    );
-
-    SmartDashboard.putData("ShotCalculator", shotCalc);
+          return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
+        }));
 
     final var idle = new SwerveRequest.Idle();
     RobotModeTriggers.disabled()
         .whileTrue(drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
-    Trigger leftTrigger = joystick.leftTrigger();
+    Trigger leftTrigger = new Trigger(() -> driverInputs.leftTrigger > 0.5);
+    Trigger rightTrigger = new Trigger(() -> driverInputs.rightTrigger > 0.5);
+    Trigger buttonA = new Trigger(() -> driverInputs.a);
+    Trigger leftBumper = new Trigger(() -> driverInputs.leftBumper);
 
     leftTrigger
         .debounce(0.25)
@@ -173,26 +186,28 @@ public class RobotContainer {
             },
             Set.of(intake)));
 
-    // shoot + auto aim while held
-    joystick.rightTrigger().whileTrue(
+    rightTrigger.whileTrue(
         Commands.parallel(
             shooter.shootWhileHeld(),
-            autoAimDrive()
-        )
-    );
+            autoAimDrive()));
 
-    joystick.y().onTrue(Commands.runOnce(hood::incrementUp, hood));
-    joystick.a().onTrue(Commands.runOnce(hood::incrementDown, hood));
+    buttonA.whileTrue(
+        Commands.startEnd(
+            () -> {
+              indexer.run(-0.7);
+              rollers.runIntakePercent(-0.7);
+            },
+            () -> {
+              indexer.stop();
+              rollers.stop();
+            },
+            indexer,
+            rollers));
 
-    joystick.leftBumper()
-        .onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)));
+    leftBumper.onTrue(
+        drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)));
 
     drivetrain.registerTelemetry(logger::telemeterize);
-  }
-
-  public void updateDriverInputs() {
-    driverIO.updateInputs(driverInputs);
-    Logger.processInputs("Driver", driverInputs);
   }
 
   public Command getAutonomousCommand() {

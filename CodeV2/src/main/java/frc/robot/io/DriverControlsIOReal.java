@@ -11,10 +11,20 @@ public class DriverControlsIOReal implements DriverControlsIO {
 
   @Override
   public void updateInputs(DriverControlsIOInputs inputs) {
+    inputs.leftBumperPressed = false;
+
     inputs.leftY = -controller.getLeftY();
-    inputs.leftX = controller.getLeftX();
-    inputs.rightX = controller.getRightX();
+    inputs.leftX = -controller.getLeftX();
+    inputs.rightX = -controller.getRightX();
+
+    inputs.leftTrigger = controller.getLeftTriggerAxis();
+    inputs.rightTrigger = controller.getRightTriggerAxis();
+
     inputs.a = controller.getAButton();
     inputs.b = controller.getBButton();
+    inputs.y = controller.getYButton();
+
+    inputs.leftBumper = controller.getLeftBumper();
+    inputs.leftBumperPressed = controller.getLeftBumperPressed();  // important
   }
 }

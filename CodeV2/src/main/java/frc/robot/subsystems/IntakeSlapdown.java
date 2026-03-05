@@ -17,12 +17,13 @@ public class IntakeSlapdown extends SubsystemBase {
 
   // LIMITS!!!!
   public static final double UP_LIMIT_ROT = 0.0;     // highest it can go
-  public static final double DOWN_LIMIT_ROT = 15;  // lowest it can go
+  public static final double DOWN_LIMIT_ROT = 14.5;  // lowest it can go
 
   // Setpoints
   public static final double UP_ROT = 0.2;
-  public static final double TRAVEL_ROT = 12;
-  public static final double DOWN_ROT = 15;
+  public static final double TRAVEL_ROT = 13;
+  public static final double SHOOT_ROT = 7;
+  public static final double DOWN_ROT = 14.5;
 
   // tune for PID
   private static final double kP = 10.5;
@@ -69,6 +70,11 @@ public class IntakeSlapdown extends SubsystemBase {
     goToRotations(TRAVEL_ROT);
   }
 
+  public void shoot() {
+    goToRotations(SHOOT_ROT);
+  }
+
+
   public void down() {
     goToRotations(DOWN_ROT);
   }
@@ -88,6 +94,10 @@ public class IntakeSlapdown extends SubsystemBase {
   
   public boolean isTravel() {
     return atSetpoint(TRAVEL_ROT);
+  }
+
+  public boolean isShoot() {
+    return atSetpoint(SHOOT_ROT);
   }
 
   public boolean isDown() {

@@ -13,7 +13,7 @@ public class Slapdown extends Command {
   private final Timer timer = new Timer();
 
   public Slapdown(IntakeSlapdown slapdown, double targetRotations) {
-    this(slapdown, targetRotations, 1); // timeout value
+    this(slapdown, targetRotations, 1);
   }
 
   public Slapdown(IntakeSlapdown slapdown, double targetRotations, double timeoutSec) {
@@ -42,7 +42,5 @@ public class Slapdown extends Command {
   @Override
   public void end(boolean interrupted) {
     timer.stop();
-    // holding position
-    // slapdown.stop(); // only if you explicitly want to stop moving it
   }
 }

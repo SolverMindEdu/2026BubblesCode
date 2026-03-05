@@ -10,6 +10,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.ShotCalculator;
 import frc.robot.subsystems.ShotCalculator.ShootParameters;
+import frc.robot.subsystems.IntakeSlapdown;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -20,13 +21,16 @@ public class Shooter extends SubsystemBase {
   private final IndexerSubsystem indexer;
   private final HoodSubsystem hood;
   private final ShotCalculator shotCalc;
+  private final IntakeSlapdown slapdown;
 
-  private static final double KICKER_PERCENT  = 0.8;
-  private static final double INDEXER_PERCENT = 0.02;
+  private static final double KICKER_PERCENT  = 0.9;
+  private static final double INDEXER_PERCENT = 0.8;
 
-  // Fallback if ShotCalculator errors or is not present
   private static final double DEFAULT_TARGET_RPS = 60.0;
   private static final double DEFAULT_HOOD_DEG = 10.0;
+
+  private static final double PULSE_PERIOD_SEC = 0.5;
+  private static final double PULSE_HALF_SEC = PULSE_PERIOD_SEC / 2.0;
 
   private double targetRps = 0.0;
   private double targetHoodDeg = 0.0;
@@ -36,13 +40,15 @@ public class Shooter extends SubsystemBase {
       KickerSubsystem kicker,
       IndexerSubsystem indexer,
       HoodSubsystem hood,
-      ShotCalculator shotCalc
+      ShotCalculator shotCalc,
+      IntakeSlapdown slapdown
   ) {
     this.shooter = shooter;
     this.kicker = kicker;
     this.indexer = indexer;
     this.hood = hood;
     this.shotCalc = shotCalc;
+    this.slapdown = slapdown;
   }
 
   public void setTargetRps(double rps) {
@@ -69,8 +75,8 @@ public class Shooter extends SubsystemBase {
 
     ShootParameters p = shotCalc.getParameters();
 
-    targetRps = Math.max(0.0, p.flywheelSpeed()); // ShotCalculator outputs RPS
-    targetHoodDeg = p.hoodAngle();                // ShotCalculator outputs degrees
+    targetRps = Math.max(0.0, p.flywheelSpeed());
+    targetHoodDeg = p.hoodAngle();              
 
     hood.setTargetDegrees(targetHoodDeg);
     shooter.setTargetRps(targetRps);
@@ -98,14 +104,24 @@ public class Shooter extends SubsystemBase {
     shooter.stop();
     kicker.stop();
     indexer.stop();
+    if (slapdown != null) {
+      slapdown.travel();
+    }
     targetRps = 0.0;
   }
+  private Command pulseIntakeWhileShooting() {
+    if (slapdown == null) return Commands.none();
 
-  // Auto shot while held:
-  // Every loop: read ShotCalculator -> set hood degrees + shooter target RPS
-  // Wait until at speed, then feed
-  public Command shootWhileHeld() {
     return Commands.sequence(
+        Commands.runOnce(slapdown::shoot, slapdown),
+        Commands.waitSeconds(PULSE_HALF_SEC),
+        Commands.runOnce(slapdown::travel, slapdown),
+        Commands.waitSeconds(PULSE_HALF_SEC)
+    ).repeatedly()
+     .finallyDo(() -> slapdown.travel());
+  }
+  public Command shootWhileHeld() {
+    Command mainShoot = Commands.sequence(
         // Prime targets once at start
         Commands.runOnce(() -> {
           try {
@@ -118,8 +134,6 @@ public class Shooter extends SubsystemBase {
             shooter.setTargetRps(targetRps);
           }
         }, hood, shooter),
-
-        // Keep updating targets until we are at speed
         Commands.run(() -> {
           try {
             updateTargetsFromShotCalc();
@@ -136,7 +150,6 @@ public class Shooter extends SubsystemBase {
           }
         }, hood, shooter).until(shooter::isAtTargetSpeed),
 
-        // Feed while held, still updating shot targets
         Commands.run(() -> {
           try {
             updateTargetsFromShotCalc();
@@ -146,6 +159,11 @@ public class Shooter extends SubsystemBase {
           kicker.run(KICKER_PERCENT);
           indexer.run(INDEXER_PERCENT);
         }, hood, shooter, kicker, indexer)
+    );
+
+    return Commands.parallel(
+        mainShoot,
+        pulseIntakeWhileShooting()
     ).finallyDo(this::stopAll);
   }
 }

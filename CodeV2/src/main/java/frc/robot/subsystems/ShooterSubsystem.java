@@ -25,12 +25,10 @@ public class ShooterSubsystem extends SubsystemBase {
     private final Debouncer atSpeedDebounce =
         new Debouncer(0.10, Debouncer.DebounceType.kRising);
 
-    // ====== TUNE THESE ======
-    private static final double kP = 0.15;
+    private static final double kP = 0.25;
     private static final double kI = 0.0;
     private static final double kD = 0.0;
-    private static final double kV = 0.12;  // feedforward (IMPORTANT)
-    // =========================
+    private static final double kV = 0.12;
 
     public ShooterSubsystem() {
 
@@ -44,22 +42,15 @@ public class ShooterSubsystem extends SubsystemBase {
 
         cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-        // Left motor
         cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         shooterLeft.getConfigurator().apply(cfg);
 
-        // Middle motor
         cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         shooterMiddle.getConfigurator().apply(cfg);
 
-        // Right motor
         cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         shooterRight.getConfigurator().apply(cfg);
     }
-
-    // =============================
-    // Set velocity in RPS
-    // =============================
     public void setTargetRps(double rps) {
         targetRps = Math.max(0.0, rps);
 
@@ -75,9 +66,6 @@ public class ShooterSubsystem extends SubsystemBase {
         targetRps = 0.0;
     }
 
-    // =============================
-    // Getters (already RPS)
-    // =============================
     public double getLeftRps() {
         return shooterLeft.getVelocity().getValueAsDouble();
     }
