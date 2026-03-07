@@ -29,7 +29,7 @@ public class Intake extends SubsystemBase {
   private State state = State.UP;
   private State desired = State.UP;
   private static final double ROLLER_INTAKE_RPS = 65.0;
-  private static final double INDEXER_ASSIST_PERCENT = 0.4;
+  private static final double INDEXER_ASSIST_PERCENT = 0.2;
 
   public Intake(IntakeSlapdown slapdown, IntakeRollerSubsystem rollers, IndexerSubsystem indexer) {
     this.slapdown = slapdown;

@@ -12,7 +12,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -31,6 +31,8 @@ import frc.robot.subsystems.IntakeSlapdown;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.ShotCalculator;
 import frc.robot.subsystems.KickerSubsystem;
+import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.LEDs.LEDState;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.HoodSubsystem;
 
@@ -61,6 +63,9 @@ public class RobotContainer {
   private final KickerSubsystem kicker = new KickerSubsystem();
   private final IndexerSubsystem indexer = new IndexerSubsystem();
   private final HoodSubsystem hood = new HoodSubsystem();
+  private final LEDs leds = new LEDs();
+  private double filteredTargetRad = 0.0;
+  private boolean targetInitialized = false;
 
   private final Shooter shooter =
       new Shooter(shooterSubsystem, kicker, indexer, hood, shotCalc, slapdown);
@@ -73,7 +78,7 @@ public class RobotContainer {
       new DriverControlsIO.DriverControlsIOInputs();
 
   private final SendableChooser<Command> autoChooser;
-  private final PIDController aimThetaPid = new PIDController(8.5, 0.0, 0.12);
+  private final PIDController aimThetaPid = new PIDController(9.5, 0.0, 0.2);
 
   public RobotContainer() {
     autoChooser = AutoBuilder.buildAutoChooser();
@@ -82,6 +87,63 @@ public class RobotContainer {
     configureBindings();
     SmartDashboard.putData("Auto Chooser", autoChooser);
     SmartDashboard.putData("ShotCalculator", shotCalc);
+  }
+
+  private boolean isAimedWithinDegrees(double toleranceDeg) {
+  var p = shotCalc.getParameters();
+
+  double targetRad = p.robotHeadingRadians();
+  double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
+
+  if (!Double.isFinite(targetRad)) {
+    return false;
+  }
+
+  double errorRad = MathUtil.angleModulus(targetRad - currentRad);
+  double errorDeg = Math.toDegrees(Math.abs(errorRad));
+
+  return errorDeg <= toleranceDeg;
+  }
+
+  private boolean isAligningForShot() {
+    return driverInputs.rightTrigger > 0.5 && !isAimedWithinDegrees(3.0);
+  }
+
+  private boolean isReadyToShoot() {
+    return driverInputs.rightTrigger > 0.5
+        && shooter.isAtSpeed()
+        && isAimedWithinDegrees(3.0)
+        && !shooter.isFeeding();
+  }
+
+  private boolean isIntakingNow() {
+    return driverInputs.leftTrigger > 0.5 || intake.getState() == Intake.State.DOWN;
+  }
+
+  private boolean isPassingNow() {
+    return driverInputs.rightTrigger > 0.5 && shooter.isPassing() && !shooter.isFeeding();
+  }
+
+  private void updateLEDState() {
+    LEDState desired;
+
+    if (DriverStation.isAutonomousEnabled()) {
+      desired = LEDState.AUTO_RAINBOW;
+    } else if (shooter.isFeeding()) {
+      desired = LEDState.SHOOTING_BLUE_FLASH;
+    } else if (isIntakingNow()) {
+      desired = LEDState.INTAKING_YELLOW;
+    } else if (isPassingNow()) {
+      desired = LEDState.PASSING_YELLOW_FLASH;
+    } else if (isAligningForShot()) {
+      desired = LEDState.ALIGNING_RED_FLASH;
+    } else if (isReadyToShoot()) {
+      desired = LEDState.READY_GREEN;
+    } else {
+      desired = LEDState.IDLE_BLUE;
+    }
+
+    leds.setState(desired);
   }
 
   public void updateDriverInputs() {
@@ -128,37 +190,80 @@ public class RobotContainer {
             .withTimeout(3.0));
   }
 
-  private Command autoAimDrive() {
-    return drivetrain.applyRequest(() -> {
-      var p = shotCalc.getParameters();
+  // private Command autoAimDrive() {
+  //   return drivetrain.applyRequest(() -> {
+  //     var p = shotCalc.getParameters();
 
-      double targetRad = p.robotHeadingRadians();
-      double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
+  //     double targetRad = p.robotHeadingRadians();
+  //     double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
 
-      double xCmd = driverInputs.leftY * MaxSpeed * 0.5;
-      double yCmd = -driverInputs.leftX * MaxSpeed * 0.5;
+  //     double xCmd = driverInputs.leftY * MaxSpeed * 0.5;
+  //     double yCmd = driverInputs.leftX * MaxSpeed * 0.5;
 
-      if (!Double.isFinite(targetRad)) {
-        double rotCmd = -driverInputs.rightX * MaxAngularRate;
-        return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
-      }
+  //     if (!Double.isFinite(targetRad)) {
+  //       double rotCmd = -driverInputs.rightX * MaxAngularRate;
+  //       return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
+  //     }
 
-      double omegaCmd = aimThetaPid.calculate(currentRad, targetRad);
-      omegaCmd = MathUtil.clamp(omegaCmd, -MaxAngularRate, MaxAngularRate);
+  //     double omegaCmd = aimThetaPid.calculate(currentRad, targetRad);
+  //     omegaCmd = MathUtil.clamp(omegaCmd, -MaxAngularRate, MaxAngularRate);
 
-      return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(omegaCmd);
+  //     return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(omegaCmd);
+  //   });
+  // }
+
+private Command autoAimDrive() {
+  return drivetrain.applyRequest(() -> {
+    var p = shotCalc.getParameters();
+
+    double targetRad = p.robotHeadingRadians();
+    double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
+
+    double xCmd = driverInputs.leftY * MaxSpeed * 0.5;
+    double yCmd = driverInputs.leftX * MaxSpeed * 0.5;
+
+    if (!Double.isFinite(targetRad)) {
+      targetInitialized = false;
+      double rotCmd = -driverInputs.rightX * MaxAngularRate;
+      return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
+    }
+
+    // smooth target heading
+    if (!targetInitialized) {
+      filteredTargetRad = targetRad;
+      targetInitialized = true;
+    } else {
+      double delta = MathUtil.angleModulus(targetRad - filteredTargetRad);
+      filteredTargetRad = MathUtil.angleModulus(filteredTargetRad + delta * 0.2);
+    }
+
+    double errorRad = MathUtil.angleModulus(filteredTargetRad - currentRad);
+
+    // tiny deadband near lock
+    if (Math.abs(errorRad) < Math.toRadians(1.0)) {
+      return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(0.0);
+    }
+
+    double omegaCmd = aimThetaPid.calculate(currentRad, filteredTargetRad);
+
+    double autoAimMaxOmega = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
+    omegaCmd = MathUtil.clamp(omegaCmd, -autoAimMaxOmega, autoAimMaxOmega);
+
+    return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(omegaCmd);
     });
   }
 
   private void configureBindings() {
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(() -> {
-          double xCmd = driverInputs.leftY * MaxSpeed * 0.4;
-          double yCmd = driverInputs.leftX * MaxSpeed * 0.4;
+          double xCmd = driverInputs.leftY * MaxSpeed * 0.6;
+          double yCmd = driverInputs.leftX * MaxSpeed * 0.6;
           double rotCmd = driverInputs.rightX * MaxAngularRate;
 
           return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
         }));
+
+    leds.setDefaultCommand(Commands.run(this::updateLEDState, leds));
 
     final var idle = new SwerveRequest.Idle();
     RobotModeTriggers.disabled()
@@ -177,7 +282,7 @@ public class RobotContainer {
                 Set.of(intake)));
 
     leftTrigger.onFalse(
-        Commands.defer(
+        Commands.defer(   
             () -> {
               if (intake.getState() == Intake.State.DOWN || intake.getState() == Intake.State.MOVING) {
                 return intake.stopIntakeAndGoTravel();
@@ -195,7 +300,7 @@ public class RobotContainer {
         Commands.startEnd(
             () -> {
               indexer.run(-0.7);
-              rollers.runIntakePercent(-0.7);
+              rollers.runIntakePercent(-0.5);
             },
             () -> {
               indexer.stop();

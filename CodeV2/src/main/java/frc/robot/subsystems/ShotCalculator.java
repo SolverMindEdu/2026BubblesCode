@@ -82,22 +82,22 @@ public class ShotCalculator extends SubsystemBase {
     shotHoodAngleMap.put(3.0, Rotation2d.fromDegrees(8)); // distance, angle
     shotHoodAngleMap.put(3.3, Rotation2d.fromDegrees(9.5)); // distance, angle
     shotHoodAngleMap.put(3.5, Rotation2d.fromDegrees(10)); // distance, angle
-    shotHoodAngleMap.put(3.9, Rotation2d.fromDegrees(12.5)); // distance, angle
-    shotHoodAngleMap.put(4.4, Rotation2d.fromDegrees(15.0)); // distance, angle
+    shotHoodAngleMap.put(3.9, Rotation2d.fromDegrees(13.0)); // distance, angle
+    shotHoodAngleMap.put(4.4, Rotation2d.fromDegrees(16.0)); // distance, angle
     shotHoodAngleMap.put(5.0, Rotation2d.fromDegrees(18.0)); // distance, angle
-    shotHoodAngleMap.put(5.4, Rotation2d.fromDegrees(26.0)); // distance, angle
-    shotHoodAngleMap.put(5.5, Rotation2d.fromDegrees(27.0)); // distance, angle
+    shotHoodAngleMap.put(5.4, Rotation2d.fromDegrees(20.0)); // distance, angle
+    shotHoodAngleMap.put(5.5, Rotation2d.fromDegrees(21.0)); // distance, angle
 
-    shotFlywheelSpeedMap.put(1.9, 51.5); //distance RPS
-    shotFlywheelSpeedMap.put(2.5, 54.5); //distance RPS
-    shotFlywheelSpeedMap.put(3.0, 57.0); //distance RPS
+    shotFlywheelSpeedMap.put(1.9, 50.5); //distance RPS
+    shotFlywheelSpeedMap.put(2.5, 53.5); //distance RPS
+    shotFlywheelSpeedMap.put(3.0, 56.0); //distance RPS
     shotFlywheelSpeedMap.put(3.3, 58.0); //distance RPS
     shotFlywheelSpeedMap.put(3.5, 59.0); //distance RPS
-    shotFlywheelSpeedMap.put(3.9, 61.0); //distance RPS
-    shotFlywheelSpeedMap.put(4.4, 65.0); //distance RPS
+    shotFlywheelSpeedMap.put(3.9, 62.0); //distance RPS
+    shotFlywheelSpeedMap.put(4.4, 66.0); //distance RPS
     shotFlywheelSpeedMap.put(5.0, 71.5); //distance RPS
-    shotFlywheelSpeedMap.put(5.4, 77.0); //distance RPS
-    shotFlywheelSpeedMap.put(5.5, 79.5); //distance RPS
+    shotFlywheelSpeedMap.put(5.4, 79.0); //distance RPS
+    shotFlywheelSpeedMap.put(5.5, 82.0); //d  distance RPS
 
 
     timeOfFlightMap.put(1.64227, 0.93); //distance,  time
