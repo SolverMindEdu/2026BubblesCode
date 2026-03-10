@@ -83,6 +83,7 @@ public class ShotCalculator extends SubsystemBase {
     shotHoodAngleMap.put(3.3, Rotation2d.fromDegrees(9.5)); // distance, angle
     shotHoodAngleMap.put(3.5, Rotation2d.fromDegrees(10)); // distance, angle
     shotHoodAngleMap.put(3.9, Rotation2d.fromDegrees(13.0)); // distance, angle
+    shotHoodAngleMap.put(4.0, Rotation2d.fromDegrees(13.5)); // distance, angle
     shotHoodAngleMap.put(4.4, Rotation2d.fromDegrees(16.0)); // distance, angle
     shotHoodAngleMap.put(5.0, Rotation2d.fromDegrees(18.0)); // distance, angle
     shotHoodAngleMap.put(5.4, Rotation2d.fromDegrees(20.0)); // distance, angle
@@ -93,7 +94,8 @@ public class ShotCalculator extends SubsystemBase {
     shotFlywheelSpeedMap.put(3.0, 56.0); //distance RPS
     shotFlywheelSpeedMap.put(3.3, 58.0); //distance RPS
     shotFlywheelSpeedMap.put(3.5, 59.0); //distance RPS
-    shotFlywheelSpeedMap.put(3.9, 62.0); //distance RPS
+    shotFlywheelSpeedMap.put(3.9, 63.0); //distance RPS
+    shotFlywheelSpeedMap.put(4.0, 64.0); //distance RPS
     shotFlywheelSpeedMap.put(4.4, 66.0); //distance RPS
     shotFlywheelSpeedMap.put(5.0, 71.5); //distance RPS
     shotFlywheelSpeedMap.put(5.4, 79.0); //distance RPS

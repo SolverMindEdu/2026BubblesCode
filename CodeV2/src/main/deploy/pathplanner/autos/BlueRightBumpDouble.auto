@@ -30,7 +30,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "IntakeBlueRightBump"
+                  "pathName": "IntakeBlueRightBump1"
                 }
               },
               {
@@ -80,16 +80,10 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 2.5
+                  "waitTime": 2.0
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "BumpBlueRight2"
           }
         },
         {
@@ -99,7 +93,26 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "IntakeBlueRightBump"
+                  "pathName": "BumpBlueRight2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeDeploy"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "IntakeBlueRightBump2"
                 }
               },
               {
@@ -130,7 +143,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "ReturnToShoot"
+                  "pathName": "ReturnToShoot2"
                 }
               }
             ]

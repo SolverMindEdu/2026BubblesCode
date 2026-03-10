@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.robot.io.DriverControlsIO;
 import frc.robot.io.DriverControlsIOReal;
-
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeRollerSubsystem;
 import frc.robot.subsystems.IntakeSlapdown;
@@ -60,6 +60,7 @@ public class RobotContainer {
 
   // Shooter chain
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+  private final Climber climber = new Climber();
   private final KickerSubsystem kicker = new KickerSubsystem();
   private final IndexerSubsystem indexer = new IndexerSubsystem();
   private final HoodSubsystem hood = new HoodSubsystem();
@@ -81,8 +82,8 @@ public class RobotContainer {
   private final PIDController aimThetaPid = new PIDController(9.5, 0.0, 0.2);
 
   public RobotContainer() {
-    autoChooser = AutoBuilder.buildAutoChooser();
     registerNamedCommands();
+    autoChooser = AutoBuilder.buildAutoChooser();
     aimThetaPid.enableContinuousInput(-Math.PI, Math.PI);
     configureBindings();
     SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -120,6 +121,10 @@ public class RobotContainer {
     return driverInputs.leftTrigger > 0.5 || intake.getState() == Intake.State.DOWN;
   }
 
+  private boolean isClimbed() {
+    return driverInputs.b;
+  }
+
   private boolean isPassingNow() {
     return driverInputs.rightTrigger > 0.5 && shooter.isPassing() && !shooter.isFeeding();
   }
@@ -139,6 +144,8 @@ public class RobotContainer {
       desired = LEDState.ALIGNING_RED_FLASH;
     } else if (isReadyToShoot()) {
       desired = LEDState.READY_GREEN;
+    } else if (isClimbed()) {
+      desired = LEDState.AUTO_RAINBOW;
     } else {
       desired = LEDState.IDLE_BLUE;
     }
@@ -159,29 +166,23 @@ public class RobotContainer {
         "IntakeTravel",
         Commands.runOnce(slapdown::travel, slapdown));
     NamedCommands.registerCommand(
-        "RunIntake",
-        Commands.startEnd(
-                () -> {
-                  rollers.runIntakeRps(65.0); 
-                  indexer.run(0.4);
-                },
-                () -> {
-                  rollers.stop();
-                  indexer.stop();
-                },
-                rollers,
-                indexer)
-            .withTimeout(1.0));
-    NamedCommands.registerCommand(
-        "StopIntake",
-        Commands.runOnce(
+    "RunIntake",
+        Commands.run(
             () -> {
-              rollers.stop();
-              indexer.stop();
+              rollers.runIntakeRps(80.0);
+              indexer.run(0.4);
             },
             rollers,
-            indexer));
-
+            indexer
+        ).withTimeout(0.25)
+    );
+    NamedCommands.registerCommand(
+    "StopIntake",
+    Commands.runOnce(() -> {
+      rollers.stop();
+      indexer.stop();
+    }, rollers, indexer)
+    );
     NamedCommands.registerCommand(
         "Shoot",
         Commands.parallel(
@@ -272,6 +273,8 @@ private Command autoAimDrive() {
     Trigger leftTrigger = new Trigger(() -> driverInputs.leftTrigger > 0.5);
     Trigger rightTrigger = new Trigger(() -> driverInputs.rightTrigger > 0.5);
     Trigger buttonA = new Trigger(() -> driverInputs.a);
+    Trigger buttonB = new Trigger(() -> driverInputs.b);
+    Trigger buttonY = new Trigger(() -> driverInputs.y);
     Trigger leftBumper = new Trigger(() -> driverInputs.leftBumper);
 
     leftTrigger
@@ -311,6 +314,18 @@ private Command autoAimDrive() {
 
     leftBumper.onTrue(
         drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)));
+
+    buttonY.onTrue(Commands.runOnce(
+            () -> {
+              climber.up();
+            },
+            climber));
+
+    buttonB.onTrue(Commands.runOnce(
+            () -> {
+              climber.down();
+            },
+            climber));
 
     drivetrain.registerTelemetry(logger::telemeterize);
   }

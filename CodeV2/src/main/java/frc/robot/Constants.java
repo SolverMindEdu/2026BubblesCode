@@ -303,6 +303,9 @@ public class Constants {
 
         //Indexer
         public static final int INDEXER_MOTOR = 14;
+
+        //Climber
+        public static final int CLIMBER_MOTOR = 20;
     }
 
     public class fieldPoses{
