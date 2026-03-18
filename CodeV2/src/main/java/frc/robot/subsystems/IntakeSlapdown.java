@@ -17,13 +17,13 @@ public class IntakeSlapdown extends SubsystemBase {
 
   // LIMITS!!!!
   public static final double UP_LIMIT_ROT = 0.0;     // highest it can go
-  public static final double DOWN_LIMIT_ROT = 14.8;  // lowest it can go
+  public static final double DOWN_LIMIT_ROT = 14.6;  // lowest it can go
 
   // Setpoints
   public static final double UP_ROT = 0.2;
   public static final double TRAVEL_ROT = 13;
   public static final double SHOOT_ROT = 10;
-  public static final double DOWN_ROT = 14.8;
+  public static final double DOWN_ROT = 14.6;
 
   // tune for PID
   private static final double kP = 10.5;

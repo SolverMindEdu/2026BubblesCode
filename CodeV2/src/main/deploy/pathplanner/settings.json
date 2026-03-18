@@ -2,10 +2,22 @@
   "robotWidth": 0.9,
   "robotLength": 0.9,
   "holonomicMode": true,
-  "pathFolders": [],
-  "autoFolders": [],
-  "defaultMaxVel": 2.5,
-  "defaultMaxAccel": 2.1,
+  "pathFolders": [
+    "DoubleSwipeRight",
+    "FullSwipeLeft",
+    "FullSwipeRight",
+    "Theory6Autos",
+    "Tests"
+  ],
+  "autoFolders": [
+    "DoubleSwipes",
+    "FullSwipe",
+    "Theory6",
+    "SingleSwipe",
+    "Tests"
+  ],
+  "defaultMaxVel": 3.3,
+  "defaultMaxAccel": 2.9,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
   "defaultNominalVoltage": 12.0,

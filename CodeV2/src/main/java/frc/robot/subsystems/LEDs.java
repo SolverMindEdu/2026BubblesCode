@@ -24,11 +24,9 @@ public class LEDs extends SubsystemBase {
     PASSING_YELLOW_FLASH
   }
 
-  private final CANdle candle = new CANdle(18, CANBus.roboRIO()); // change CAN ID if needed
-
-  // external strip start/end
+  private final CANdle candle = new CANdle(18, CANBus.roboRIO());
   private static final int START = 0;
-  private static final int END = 27; // 60 LEDs -> 8..67
+  private static final int END = 27;
 
   private LEDState currentState = null;
 

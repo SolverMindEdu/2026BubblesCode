@@ -23,6 +23,7 @@ public class DriverControlsIOReal implements DriverControlsIO {
     inputs.a = controller.getAButton();
     inputs.b = controller.getBButton();
     inputs.y = controller.getYButton();
+    inputs.x = controller.getXButton();
 
     inputs.leftBumper = controller.getLeftBumper();
     inputs.leftBumperPressed = controller.getLeftBumperPressed();  // important

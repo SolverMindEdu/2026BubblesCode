@@ -60,10 +60,9 @@ public class ShotCalculator extends SubsystemBase {
   static {
     //test Values
     passingShotHoodAngleMap.put(1.45, Rotation2d.fromDegrees(19.0));
-    passingShotHoodAngleMap.put(5.0, Rotation2d.fromDegrees(35)); // distance, angle
-    passingShotFlywheelSpeedMap.put(1.45, 20.0); //distance RPS
-    passingShotFlywheelSpeedMap.put(5.0, 50.0); //distance RPS
-
+    passingShotHoodAngleMap.put(5.0, Rotation2d.fromDegrees(30)); // distance, angle
+    passingShotFlywheelSpeedMap.put(1.45, 25.0); //distance RPS
+    passingShotFlywheelSpeedMap.put(5.0, 60.0); //distance RPS
     passingTimeOfFlightMap.put(1.64227, 0.93); //distance, time
   }
 
@@ -86,10 +85,10 @@ public class ShotCalculator extends SubsystemBase {
     shotHoodAngleMap.put(4.0, Rotation2d.fromDegrees(13.5)); // distance, angle
     shotHoodAngleMap.put(4.4, Rotation2d.fromDegrees(16.0)); // distance, angle
     shotHoodAngleMap.put(5.0, Rotation2d.fromDegrees(18.0)); // distance, angle
-    shotHoodAngleMap.put(5.4, Rotation2d.fromDegrees(20.0)); // distance, angle
-    shotHoodAngleMap.put(5.5, Rotation2d.fromDegrees(21.0)); // distance, angle
+    shotHoodAngleMap.put(5.4, Rotation2d.fromDegrees(21.0)); // distance, angle
+    shotHoodAngleMap.put(5.5, Rotation2d.fromDegrees(22.0)); // distance, angle
 
-    shotFlywheelSpeedMap.put(1.9, 50.5); //distance RPS
+    shotFlywheelSpeedMap.put(1.9, 50.5); //distance RPSde
     shotFlywheelSpeedMap.put(2.5, 53.5); //distance RPS
     shotFlywheelSpeedMap.put(3.0, 56.0); //distance RPS
     shotFlywheelSpeedMap.put(3.3, 58.0); //distance RPS
@@ -98,8 +97,8 @@ public class ShotCalculator extends SubsystemBase {
     shotFlywheelSpeedMap.put(4.0, 64.0); //distance RPS
     shotFlywheelSpeedMap.put(4.4, 66.0); //distance RPS
     shotFlywheelSpeedMap.put(5.0, 71.5); //distance RPS
-    shotFlywheelSpeedMap.put(5.4, 79.0); //distance RPS
-    shotFlywheelSpeedMap.put(5.5, 82.0); //d  distance RPS
+    shotFlywheelSpeedMap.put(5.4, 80.0); //distance RPS
+    shotFlywheelSpeedMap.put(5.5, 83.0); //d  distance RPS
 
 
     timeOfFlightMap.put(1.64227, 0.93); //distance,  time

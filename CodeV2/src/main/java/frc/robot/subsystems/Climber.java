@@ -22,6 +22,8 @@ public class Climber extends SubsystemBase {
   // Setpoints
   public static final double UP_ROT = 120.0;
   public static final double DOWN_ROT = 10.0;
+  public static final double HOME = 0.0;
+
 
   // tune for PID
   private static final double kP = 11.0;
@@ -73,6 +75,9 @@ public class Climber extends SubsystemBase {
     goToRotations(DOWN_ROT);
   }
 
+  public void home() {
+    goToRotations(HOME);
+  }
   public double getPositionRotations() {
     return motor.getPosition().getValueAsDouble();
   }

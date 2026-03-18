@@ -67,6 +67,8 @@ public class RobotContainer {
   private final LEDs leds = new LEDs();
   private double filteredTargetRad = 0.0;
   private boolean targetInitialized = false;
+  private boolean climberUp = false;
+  private double driveScale = 0.6;
 
   private final Shooter shooter =
       new Shooter(shooterSubsystem, kicker, indexer, hood, shotCalc, slapdown);
@@ -121,8 +123,16 @@ public class RobotContainer {
     return driverInputs.leftTrigger > 0.5 || intake.getState() == Intake.State.DOWN;
   }
 
+    private enum ClimbState {
+    HOME,
+    DEPLOYED,
+    CLIMBED
+  }
+
+private ClimbState climbState = ClimbState.HOME;
+
   private boolean isClimbed() {
-    return driverInputs.b;
+  return climbState == ClimbState.CLIMBED;
   }
 
   private boolean isPassingNow() {
@@ -188,9 +198,15 @@ public class RobotContainer {
         Commands.parallel(
                 shooter.shootWhileHeld(), 
                 autoAimDrive())
-            .withTimeout(3.0));
-  }
+            .withTimeout(10.0));
 
+    NamedCommands.registerCommand(
+      "Shoot1",
+      Commands.parallel(
+              shooter.shootWhileHeld(), 
+              autoAimDrive())
+          .withTimeout(1.5));
+  }
   // private Command autoAimDrive() {
   //   return drivetrain.applyRequest(() -> {
   //     var p = shotCalc.getParameters();
@@ -256,13 +272,13 @@ private Command autoAimDrive() {
 
   private void configureBindings() {
     drivetrain.setDefaultCommand(
-        drivetrain.applyRequest(() -> {
-          double xCmd = driverInputs.leftY * MaxSpeed * 0.6;
-          double yCmd = driverInputs.leftX * MaxSpeed * 0.6;
-          double rotCmd = driverInputs.rightX * MaxAngularRate;
+      drivetrain.applyRequest(() -> {
+        double xCmd = driverInputs.leftY * MaxSpeed * driveScale;
+        double yCmd = driverInputs.leftX * MaxSpeed * driveScale;
+        double rotCmd = driverInputs.rightX * MaxAngularRate;
 
-          return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
-        }));
+        return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
+      }));
 
     leds.setDefaultCommand(Commands.run(this::updateLEDState, leds));
 
@@ -275,6 +291,7 @@ private Command autoAimDrive() {
     Trigger buttonA = new Trigger(() -> driverInputs.a);
     Trigger buttonB = new Trigger(() -> driverInputs.b);
     Trigger buttonY = new Trigger(() -> driverInputs.y);
+    Trigger buttonX = new Trigger(() -> driverInputs.x);
     Trigger leftBumper = new Trigger(() -> driverInputs.leftBumper);
 
     leftTrigger
@@ -299,7 +316,7 @@ private Command autoAimDrive() {
             shooter.shootWhileHeld(),
             autoAimDrive()));
 
-    buttonA.whileTrue(
+    buttonX.whileTrue(
         Commands.startEnd(
             () -> {
               indexer.run(-0.7);
@@ -315,17 +332,45 @@ private Command autoAimDrive() {
     leftBumper.onTrue(
         drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)));
 
-    buttonY.onTrue(Commands.runOnce(
-            () -> {
-              climber.up();
-            },
-            climber));
+    buttonY.onTrue(
+    Commands.runOnce(() -> {
 
-    buttonB.onTrue(Commands.runOnce(
-            () -> {
+          if (climbState == ClimbState.HOME) {
+              climber.up();
+              climbState = ClimbState.DEPLOYED;
+          }
+
+          else if (climbState == ClimbState.DEPLOYED) {
               climber.down();
-            },
-            climber));
+              climbState = ClimbState.CLIMBED;
+          }
+
+          else if (climbState == ClimbState.CLIMBED) {
+              climber.home();
+              climbState = ClimbState.HOME;
+          }
+
+      }, climber)
+  );
+
+    buttonB.whileTrue(
+        Commands.parallel(
+            shooter.shootWhileHeld()));
+
+    buttonA.onTrue(
+    Commands.runOnce(() -> {
+      climber.home();
+      climberUp = false;
+
+      hood.setTargetDegrees(HoodSubsystem.MIN_DEG);
+      slapdown.up();
+
+      rollers.stop();
+      indexer.stop();
+      kicker.stop();
+      shooterSubsystem.stop();
+    }, climber, hood, slapdown, rollers, indexer, kicker, shooterSubsystem)
+);
 
     drivetrain.registerTelemetry(logger::telemeterize);
   }

@@ -11,6 +11,7 @@ public interface DriverControlsIO {
 
   public boolean a = false;
   public boolean b = false;
+  public boolean x = false;
   public boolean y = false;
   public boolean leftBumper = false;
 
