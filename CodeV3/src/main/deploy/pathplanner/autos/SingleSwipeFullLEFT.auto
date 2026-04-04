@@ -1,0 +1,25 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SingleSwipeFullLEFT"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot2"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "SingleSwipeLeft",
+  "choreoAuto": false
+}

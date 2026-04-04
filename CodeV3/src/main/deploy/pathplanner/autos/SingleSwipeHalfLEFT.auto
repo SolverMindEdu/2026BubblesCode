@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SingleSwipeHalfLEFT"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootInitalize"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SingleSwipeHalfLEFTP2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "SingleSwipeLeft",
+  "choreoAuto": false
+}

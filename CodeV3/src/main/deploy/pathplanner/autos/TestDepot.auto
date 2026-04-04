@@ -1,0 +1,31 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeTravel"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SingleSwipeHalfLEFTP2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": "SingleSwipeLeft",
+  "choreoAuto": false
+}
