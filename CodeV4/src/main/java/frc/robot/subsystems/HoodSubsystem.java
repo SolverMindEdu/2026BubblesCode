@@ -18,15 +18,9 @@ public class HoodSubsystem extends SubsystemBase {
 
   private static final double MOTOR_ROTATIONS_PER_DEGREE = 3.125 / 360.0;
 
-  public static final double MIN_DEG = 0.2;
-  public static final double MAX_DEG = 35.0;
-  private static final double STEP_DEG = 3.0;
   private static final double kP = 10.0;
   private static final double kI = 0.0;
   private static final double kD = 0.2;
-
-  private static final double CRUISE_VEL_RPS = 40.0;
-  private static final double ACCEL_RPS2 = 30.0;
 
   private double targetDeg = 0.0;
 
@@ -38,8 +32,8 @@ public class HoodSubsystem extends SubsystemBase {
     slot0.kI = kI;
     slot0.kD = kD;
 
-    cfg.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VEL_RPS;
-    cfg.MotionMagic.MotionMagicAcceleration = ACCEL_RPS2;
+    cfg.MotionMagic.MotionMagicCruiseVelocity = Constants.Hood.CRUISE_VEL_RPS;
+    cfg.MotionMagic.MotionMagicAcceleration = Constants.Hood.ACCEL_RPS2;
 
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
@@ -50,18 +44,22 @@ public class HoodSubsystem extends SubsystemBase {
   }
 
   public void setTargetDegrees(double degrees) {
-    targetDeg = MathUtil.clamp(degrees, MIN_DEG, MAX_DEG);
+    targetDeg = MathUtil.clamp(
+        degrees,
+        Constants.Hood.MIN_DEG,
+        Constants.Hood.MAX_DEG
+    );
 
     double motorRotations = degreesToMotorRotations(targetDeg);
     motor.setControl(mmRequest.withPosition(motorRotations));
   }
 
   public void incrementUp() {
-    setTargetDegrees(targetDeg + STEP_DEG);
+    setTargetDegrees(targetDeg + Constants.Hood.STEP_DEG);
   }
 
   public void incrementDown() {
-    setTargetDegrees(targetDeg - STEP_DEG);
+    setTargetDegrees(targetDeg - Constants.Hood.STEP_DEG);
   }
 
   public double getPositionDegrees() {

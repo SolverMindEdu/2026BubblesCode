@@ -12,8 +12,10 @@ import com.ctre.phoenix6.signals.StatusLedWhenActiveValue;
 import com.ctre.phoenix6.signals.StripTypeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class LEDs extends SubsystemBase {
+
   public enum LEDState {
     IDLE_BLUE,
     AUTO_RAINBOW,
@@ -21,12 +23,15 @@ public class LEDs extends SubsystemBase {
     READY_GREEN,
     SHOOTING_BLUE_FLASH,
     INTAKING_GREEN_FLASH,
-    PASSING_YELLOW_FLASH
+    PASSING_YELLOW_FLASH,
+    REVERSE_RED_FLASH
   }
 
-  private final CANdle candle = new CANdle(18, CANBus.roboRIO());
-  private static final int START = 0;
-  private static final int END = 30;
+  private final CANdle candle =
+      new CANdle(Constants.LED.CANDLE_ID, CANBus.roboRIO());
+
+  private static final int START = Constants.LED.START;
+  private static final int END = Constants.LED.END;
 
   private LEDState currentState = null;
 
@@ -34,7 +39,9 @@ public class LEDs extends SubsystemBase {
     var cfg = new CANdleConfiguration();
     cfg.LED.StripType = StripTypeValue.GRB;
     cfg.LED.BrightnessScalar = 0.4;
-    cfg.CANdleFeatures.StatusLedWhenActive = StatusLedWhenActiveValue.Disabled;
+    cfg.CANdleFeatures.StatusLedWhenActive =
+        StatusLedWhenActiveValue.Disabled;
+
     candle.getConfigurator().apply(cfg);
 
     clearAnimations();
@@ -56,49 +63,66 @@ public class LEDs extends SubsystemBase {
     clearAnimations();
 
     switch (newState) {
+
       case AUTO_RAINBOW:
-        candle.setControl(new RainbowAnimation(START, END).withSlot(0));
+        candle.setControl(
+            new RainbowAnimation(START, END).withSlot(0)
+        );
         break;
 
       case ALIGNING_RED_FLASH:
         candle.setControl(
             new StrobeAnimation(START, END)
                 .withSlot(0)
-                .withColor(new RGBWColor(255, 0, 0, 0)));
+                .withColor(new RGBWColor(255, 0, 0, 0))
+        );
         break;
 
       case READY_GREEN:
         candle.setControl(
             new SolidColor(START, END)
-                .withColor(new RGBWColor(0, 255, 0, 0)));
+                .withColor(new RGBWColor(0, 255, 0, 0))
+        );
         break;
 
       case SHOOTING_BLUE_FLASH:
         candle.setControl(
             new StrobeAnimation(START, END)
                 .withSlot(0)
-                .withColor(new RGBWColor(0, 0, 255, 0)));
+                .withColor(new RGBWColor(0, 0, 255, 0))
+        );
         break;
 
       case INTAKING_GREEN_FLASH:
         candle.setControl(
             new StrobeAnimation(START, END)
                 .withSlot(0)
-                .withColor(new RGBWColor(0, 255, 0, 0)));
+                .withColor(new RGBWColor(255, 0, 0, 0))
+        );
         break;
 
       case PASSING_YELLOW_FLASH:
         candle.setControl(
             new StrobeAnimation(START, END)
                 .withSlot(0)
-                .withColor(new RGBWColor(255, 180, 0, 0)));
+                .withColor(new RGBWColor(255, 180, 0, 0))
+        );
+        break;
+
+      case REVERSE_RED_FLASH:
+        candle.setControl(
+            new StrobeAnimation(START, END)
+                .withSlot(0)
+                .withColor(new RGBWColor(0, 255, 0, 0))
+        );
         break;
 
       case IDLE_BLUE:
       default:
         candle.setControl(
             new SolidColor(START, END)
-                .withColor(new RGBWColor(0, 0, 255, 0)));
+                .withColor(new RGBWColor(0, 0, 255, 0))
+        );
         break;
     }
   }
