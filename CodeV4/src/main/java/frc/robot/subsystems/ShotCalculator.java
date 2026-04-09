@@ -58,8 +58,9 @@ public class ShotCalculator extends SubsystemBase {
   static {
     // Add real passing values here when ready
     passingShotHoodAngleMap.put(1.45, Rotation2d.fromDegrees(45.0));
-    passingShotHoodAngleMap.put(5.0, Rotation2d.fromDegrees(60.0));
-    passingShotFlywheelSpeedMap.put(1.45, 25.0);
+    passingShotHoodAngleMap.put(5.0, Rotation2d.fromDegrees(80.0));
+    passingShotHoodAngleMap.put(7.5, Rotation2d.fromDegrees(95.0));
+    passingShotFlywheelSpeedMap.put(1.45, 35.0);
     passingShotFlywheelSpeedMap.put(5.0, 65.0);
     passingShotFlywheelSpeedMap.put(7.5, 70.0);
     passingTimeOfFlightMap.put(1.64227, 0.93);
@@ -89,7 +90,7 @@ public class ShotCalculator extends SubsystemBase {
 
     shotFlywheelSpeedMap.put(4.4, 63.5);
     shotFlywheelSpeedMap.put(4.2, 62.0);
-    shotFlywheelSpeedMap.put(3.8, 59.0);
+    shotFlywheelSpeedMap.put(3.8, 60.0);
     shotFlywheelSpeedMap.put(3.5, 57.0);
     shotFlywheelSpeedMap.put(3.2, 56.0);
     shotFlywheelSpeedMap.put(3.0, 55.0);

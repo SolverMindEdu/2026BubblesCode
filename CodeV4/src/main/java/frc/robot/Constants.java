@@ -52,7 +52,7 @@ public final class Constants {
         public static final double SHOOT_ASSIST_INTAKE_RPS = 30.0;
         public static final double INTAKE_RAISE_DELAY_SEC = 1.9;
 
-        public static final double LATCH_MIN_TIME_SEC = 0.6;
+        public static final double LATCH_MIN_TIME_SEC = 0.8;
     }
 
     public static final class Indexer {
