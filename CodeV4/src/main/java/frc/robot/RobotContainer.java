@@ -129,40 +129,82 @@ public class RobotContainer {
 
         autoChooser.addOption("Single Swipe Right", new PathPlannerAuto("SingleSwipeRight"));
         autoChooser.addOption("Single Swipe Left", buildMirroredSingleSwipeAuto());
+
+        autoChooser.addOption("Far 1.5 Swipe Right", new PathPlannerAuto("Far1.5SwipeRight"));
+        autoChooser.addOption("Far 1.5 Swipe Left", buildMirroredFarOnePointFiveSwipeAuto());
+
+        autoChooser.addOption("Far Single Swipe Right", new PathPlannerAuto("FarSingleSwipeRight"));
+        autoChooser.addOption("Far Single Swipe Left", buildMirroredFarSingleSwipeAuto());
     }
 
     private Command buildMirroredSingleSwipeAuto() {
         try {
-            PathPlannerPath singleSwipe = PathPlannerPath.fromPathFile("SingleSwipe");
-            PathPlannerPath mirroredSingleSwipe = singleSwipe.mirrorPath();
+            PathPlannerPath path = PathPlannerPath.fromPathFile("SingleSwipe");
 
-            return AutoBuilder.followPath(mirroredSingleSwipe);
-        } catch (Exception e) {
-            DriverStation.reportError(
-                "Failed to build mirrored auto: " + e.getMessage(),
-                e.getStackTrace()
+            return Commands.sequence(
+                AutoBuilder.followPath(path.mirrorPath()),
+                Commands.parallel(
+                    shooter.shootWhileHeld(),
+                    autoAimDrive()
+                ).withTimeout(6.0)
             );
+        } catch (Exception e) {
+            DriverStation.reportError("SingleSwipeLeft failed", e.getStackTrace());
+            return Commands.none();
+        }
+    }
+
+    private Command buildMirroredFarSingleSwipeAuto() {
+        try {
+            PathPlannerPath path = PathPlannerPath.fromPathFile("SingleSwipeFar");
+
+            return Commands.sequence(
+                AutoBuilder.followPath(path.mirrorPath()),
+                Commands.parallel(
+                    shooter.shootWhileHeld(),
+                    autoAimDrive()
+                ).withTimeout(6.0)
+            );
+        } catch (Exception e) {
+            DriverStation.reportError("FarSingleSwipeLeft failed", e.getStackTrace());
             return Commands.none();
         }
     }
 
     private Command buildMirroredOnePointFiveSwipeAuto() {
         try {
-            PathPlannerPath singleSwipe = PathPlannerPath.fromPathFile("SingleSwipe");
-            PathPlannerPath returnBack = PathPlannerPath.fromPathFile("ReturnBackToCENTRE");
-
-            PathPlannerPath mirroredSingleSwipe = singleSwipe.mirrorPath();
-            PathPlannerPath mirroredReturnBack = returnBack.mirrorPath();
+            PathPlannerPath swipe = PathPlannerPath.fromPathFile("SingleSwipe");
+            PathPlannerPath returnPath = PathPlannerPath.fromPathFile("ReturnBackToCENTRE");
 
             return Commands.sequence(
-                AutoBuilder.followPath(mirroredSingleSwipe),
-                AutoBuilder.followPath(mirroredReturnBack)
+                AutoBuilder.followPath(swipe.mirrorPath()),
+                Commands.parallel(
+                    shooter.shootWhileHeld(),
+                    autoAimDrive()
+                ).withTimeout(6.0),
+                AutoBuilder.followPath(returnPath.mirrorPath())
             );
         } catch (Exception e) {
-            DriverStation.reportError(
-                "Failed to build mirrored 1.5Swipe auto: " + e.getMessage(),
-                e.getStackTrace()
+            DriverStation.reportError("1.5SwipeLeft failed", e.getStackTrace());
+            return Commands.none();
+        }
+    }
+
+    private Command buildMirroredFarOnePointFiveSwipeAuto() {
+        try {
+            PathPlannerPath swipe = PathPlannerPath.fromPathFile("SingleSwipeFar");
+            PathPlannerPath returnPath = PathPlannerPath.fromPathFile("ReturnBackToCENTRE");
+
+            return Commands.sequence(
+                AutoBuilder.followPath(swipe.mirrorPath()),
+                Commands.parallel(
+                    shooter.shootWhileHeld(),
+                    autoAimDrive()
+                ).withTimeout(6.0),
+                AutoBuilder.followPath(returnPath.mirrorPath())
             );
+        } catch (Exception e) {
+            DriverStation.reportError("Far1.5SwipeLeft failed", e.getStackTrace());
             return Commands.none();
         }
     }
