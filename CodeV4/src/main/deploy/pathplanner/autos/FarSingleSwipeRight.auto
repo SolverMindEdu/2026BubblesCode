@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "SingleSwipe"
+            "pathName": "SingleSwipeFar"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "ShootSingleSwipe"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "SingleSwipeRight",
+  "folder": null,
   "choreoAuto": false
 }

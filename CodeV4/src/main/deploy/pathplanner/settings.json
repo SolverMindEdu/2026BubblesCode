@@ -2,14 +2,8 @@
   "robotWidth": 0.9,
   "robotLength": 0.9,
   "holonomicMode": true,
-  "pathFolders": [
-    "SingleSwipeLeft",
-    "SingleSwipeRight"
-  ],
-  "autoFolders": [
-    "SingleSwipeLeft",
-    "SingleSwipeRight"
-  ],
+  "pathFolders": [],
+  "autoFolders": [],
   "defaultMaxVel": 3.3,
   "defaultMaxAccel": 2.9,
   "defaultMaxAngVel": 540.0,

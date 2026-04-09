@@ -8,10 +8,12 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,24 +30,23 @@ import frc.robot.subsystems.IntakeRollerSubsystem;
 import frc.robot.subsystems.IntakeSlapdownSubsystem;
 import frc.robot.subsystems.KickerSubsystem;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.LEDs.LEDState;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.ShotCalculator;
-import com.pathplanner.lib.auto.NamedCommands;
 
 public class RobotContainer {
     private final double MaxSpeed =
         1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+
     private final double MaxAngularRate =
-        RotationsPerSecond.of(0.95).in(RadiansPerSecond); 
+        RotationsPerSecond.of(1.8).in(RadiansPerSecond);
 
     private final SwerveRequest.FieldCentric drive =
-    new SwerveRequest.FieldCentric()
-        .withDeadband(MaxSpeed * 0.1)
-        .withRotationalDeadband(MaxAngularRate * 0.1)
-        .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-        .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
+        new SwerveRequest.FieldCentric()
+            .withDeadband(MaxSpeed * 0.1)
+            .withRotationalDeadband(MaxAngularRate * 0.1)
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final CommandXboxController joystick = new CommandXboxController(0);
@@ -68,7 +69,7 @@ public class RobotContainer {
     private final Shooter shooter =
         new Shooter(shooterSubsystem, kicker, indexer, hood, shotCalc, intakeSlapdown, intakeRollers);
 
-    private final SendableChooser<Command> autoChooser;
+    private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
     private final PIDController aimThetaPid = new PIDController(12.0, 0.0, 0.3);
 
@@ -77,9 +78,9 @@ public class RobotContainer {
 
     public RobotContainer() {
         aimThetaPid.enableContinuousInput(-Math.PI, Math.PI);
-        registerNamedCommands();
-        autoChooser = AutoBuilder.buildAutoChooser();
 
+        registerNamedCommands();
+        configureAutoChooser();
         configureBindings();
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -90,7 +91,7 @@ public class RobotContainer {
         NamedCommands.registerCommand(
             "IntakeDeploy",
             Commands.runOnce(() -> {
-                intakeSlapdown.up();      // travel position
+                intakeSlapdown.up();
                 intakeRollers.stop();
                 indexer.stop();
             }, intakeSlapdown, intakeRollers, indexer)
@@ -112,13 +113,58 @@ public class RobotContainer {
                 shooter.shootWhileHeld()
             ).withTimeout(0.1)
         );
+
         NamedCommands.registerCommand(
-            "Shoot",
+            "ShootSingleSwipe",
             Commands.parallel(
                 shooter.shootWhileHeld(),
                 autoAimDrive()
             ).withTimeout(6.0)
         );
+    }
+
+    private void configureAutoChooser() {
+        autoChooser.setDefaultOption("1.5 Swipe Right", new PathPlannerAuto("1.5SwipeRight"));
+        autoChooser.addOption("1.5 Swipe Left", buildMirroredOnePointFiveSwipeAuto());
+
+        autoChooser.addOption("Single Swipe Right", new PathPlannerAuto("SingleSwipeRight"));
+        autoChooser.addOption("Single Swipe Left", buildMirroredSingleSwipeAuto());
+    }
+
+    private Command buildMirroredSingleSwipeAuto() {
+        try {
+            PathPlannerPath singleSwipe = PathPlannerPath.fromPathFile("SingleSwipe");
+            PathPlannerPath mirroredSingleSwipe = singleSwipe.mirrorPath();
+
+            return AutoBuilder.followPath(mirroredSingleSwipe);
+        } catch (Exception e) {
+            DriverStation.reportError(
+                "Failed to build mirrored auto: " + e.getMessage(),
+                e.getStackTrace()
+            );
+            return Commands.none();
+        }
+    }
+
+    private Command buildMirroredOnePointFiveSwipeAuto() {
+        try {
+            PathPlannerPath singleSwipe = PathPlannerPath.fromPathFile("SingleSwipe");
+            PathPlannerPath returnBack = PathPlannerPath.fromPathFile("ReturnBackToCENTRE");
+
+            PathPlannerPath mirroredSingleSwipe = singleSwipe.mirrorPath();
+            PathPlannerPath mirroredReturnBack = returnBack.mirrorPath();
+
+            return Commands.sequence(
+                AutoBuilder.followPath(mirroredSingleSwipe),
+                AutoBuilder.followPath(mirroredReturnBack)
+            );
+        } catch (Exception e) {
+            DriverStation.reportError(
+                "Failed to build mirrored 1.5Swipe auto: " + e.getMessage(),
+                e.getStackTrace()
+            );
+            return Commands.none();
+        }
     }
 
     private Command autoAimDrive() {
@@ -227,7 +273,6 @@ public class RobotContainer {
                 shooter
             )
         );
-
 
         lt.onFalse(
             Commands.sequence(

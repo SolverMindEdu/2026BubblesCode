@@ -1,0 +1,71 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.5574733096085422,
+        "y": 2.5018149466192163
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.557473309608542,
+        "y": 2.5018149466192163
+      },
+      "isLocked": false,
+      "linkedName": "StartingBump"
+    },
+    {
+      "anchor": {
+        "x": 6.3461175496688735,
+        "y": 2.147417218543047
+      },
+      "prevControl": {
+        "x": 5.888741721854305,
+        "y": 2.6338327814569538
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "CrossBumpStart"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.7167070217917679,
+      "rotationDegrees": 45.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeDeploy",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeDeploy"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.3,
+    "maxAcceleration": 2.9,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 23.198590513648195
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 45.0
+  },
+  "useDefaultConstraints": true
+}
