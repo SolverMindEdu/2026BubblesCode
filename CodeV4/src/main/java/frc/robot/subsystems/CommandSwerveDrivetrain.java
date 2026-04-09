@@ -291,6 +291,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         addLimelightVision("limelight");
         addLimelightVision("limelight-side");
         }
+
+    if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+                DriverStation.getAlliance().ifPresent(allianceColor -> {
+                    setOperatorPerspectiveForward(
+                        allianceColor == Alliance.Red
+                            ? kRedAlliancePerspectiveRotation
+                            : kBlueAlliancePerspectiveRotation
+                    );
+                    m_hasAppliedOperatorPerspective = true;
+                });
+            }
+        
     }
 
     private void addLimelightVision(String limelightName) {
@@ -325,18 +337,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         SmartDashboard.putBoolean(limelightName + " accepted", !reject);
         SmartDashboard.putNumber(limelightName + " tagCount", mt2 != null ? mt2.tagCount : 0);
-
-        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-                DriverStation.getAlliance().ifPresent(allianceColor -> {
-                    setOperatorPerspectiveForward(
-                        allianceColor == Alliance.Red
-                            ? kRedAlliancePerspectiveRotation
-                            : kBlueAlliancePerspectiveRotation
-                    );
-                    m_hasAppliedOperatorPerspective = true;
-                });
-            }
-        }
+    }
+        
 
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
