@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.sql.Driver;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -44,6 +45,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+    RebuiltShiftLogic shiftLogic = new RebuiltShiftLogic();
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -278,6 +280,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     @Override
     public void periodic() {
+        var status = shiftLogic.getStatus();
+        SmartDashboard.putBoolean("HUB Active", status.isActive);
+        SmartDashboard.putNumber("Shift Timer", status.timeLeftInShift);
+        SmartDashboard.putNumber("Current Shift", status.currentShift);
+        SmartDashboard.putNumber("Shift Timer", DriverStation.getMatchTime());
         SmartDashboard.putNumber("robot heading", this.getState().Pose.getRotation().getDegrees());
 
     if (visionEnabled) {
