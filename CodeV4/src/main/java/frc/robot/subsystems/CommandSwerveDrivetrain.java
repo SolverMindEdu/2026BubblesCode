@@ -280,55 +280,56 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void periodic() {
         SmartDashboard.putNumber("robot heading", this.getState().Pose.getRotation().getDegrees());
 
-        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-            DriverStation.getAlliance().ifPresent(allianceColor -> {
-                setOperatorPerspectiveForward(
-                    allianceColor == Alliance.Red ? kRedAlliancePerspectiveRotation : kBlueAlliancePerspectiveRotation
-                );
-                m_hasAppliedOperatorPerspective = true;
-            });
-        }
-
-        if (visionEnabled) {
-            // Tell Limelight our current orientation using the public pose getter
-            LimelightHelpers.SetRobotOrientation(
-                "limelight",
-                getState().Pose.getRotation().getDegrees(),  // <-- replaces m_poseEstimator.getEstimatedPosition()...
-                0, 0, 0, 0, 0
-            );
-        
-            // Read latest MegaTag2 estimate
-            LimelightHelpers.PoseEstimate mt2 =
-                LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-        
-            // Reject bad moments: spinning too fast or no tags
-            boolean doRejectUpdate = false;
-            double omegaDegPerSec = Math.toDegrees(getState().Speeds.omegaRadiansPerSecond);
-        
-            if (Math.abs(omegaDegPerSec) > 360.0) {
-                doRejectUpdate = true;
-            }
-            if (mt2 == null || mt2.tagCount == 0) {
-                doRejectUpdate = true;
-            }
-        
-            if (!doRejectUpdate) {
-                setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
-                addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
-            }
-        }
-
-        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-            DriverStation.getAlliance().ifPresent(allianceColor -> {
-                setOperatorPerspectiveForward(
-                    allianceColor == Alliance.Red
-                        ? kRedAlliancePerspectiveRotation
-                        : kBlueAlliancePerspectiveRotation
-                );
-                m_hasAppliedOperatorPerspective = true;
-            });
+    if (visionEnabled) {
+        addLimelightVision("limelight");
+        addLimelightVision("limelight-side");
         }
     }
+
+    private void addLimelightVision(String limelightName) {
+        double headingDeg = getState().Pose.getRotation().getDegrees();
+        double omegaDegPerSec = Math.toDegrees(getState().Speeds.omegaRadiansPerSecond);
+
+        // Tell this specific Limelight our current robot orientation
+        LimelightHelpers.SetRobotOrientation(
+            limelightName,
+            headingDeg,
+            0, 0, 0, 0, 0
+        );
+
+        // Read MegaTag2 estimate from this same Limelight
+        LimelightHelpers.PoseEstimate mt2 =
+            LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
+
+        boolean reject = false;
+
+        if (Math.abs(omegaDegPerSec) > 360.0) {
+            reject = true;
+        }
+
+        if (mt2 == null || mt2.tagCount == 0) {
+            reject = true;
+        }
+
+        if (!reject) {
+            setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+            addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+        }
+
+        SmartDashboard.putBoolean(limelightName + " accepted", !reject);
+        SmartDashboard.putNumber(limelightName + " tagCount", mt2 != null ? mt2.tagCount : 0);
+
+        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+                DriverStation.getAlliance().ifPresent(allianceColor -> {
+                    setOperatorPerspectiveForward(
+                        allianceColor == Alliance.Red
+                            ? kRedAlliancePerspectiveRotation
+                            : kBlueAlliancePerspectiveRotation
+                    );
+                    m_hasAppliedOperatorPerspective = true;
+                });
+            }
+        }
 
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();

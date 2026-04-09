@@ -13,12 +13,12 @@ public final class Constants {
       public static final int SLAPDOWN_ID = 13;
 
       public static final double UP_LIMIT_ROT = 0.0;
-      public static final double DOWN_LIMIT_ROT = 18.9;
+      public static final double DOWN_LIMIT_ROT = 19.5;
 
       public static final double UP_ROT = 0.05;
       public static final double TRAVEL_ROT = 16.0;
-      public static final double SHOOT_ROT = 18.9;
-      public static final double DOWN_ROT = 18.9;
+      public static final double SHOOT_ROT = 20.0;
+      public static final double DOWN_ROT = 19.5;
 
       public static final double kP = 10.5;
       public static final double kI = 0.0;
@@ -32,8 +32,8 @@ public final class Constants {
       public static final double CRUISE_VEL_RPS = 75.0;
       public static final double ACCEL_RPS2 = 60.0;
 
-      public static final double SLOW_UP_CRUISE_VEL_RPS = 6.0;
-      public static final double SLOW_UP_ACCEL_RPS2 = 8.0;
+      public static final double SLOW_UP_CRUISE_VEL_RPS = 7.5;
+      public static final double SLOW_UP_ACCEL_RPS2 = 9.0;
   }
 
     public static final class Shooter {
@@ -41,8 +41,8 @@ public final class Constants {
         public static final int MIDDLE_ID = 16;
         public static final int RIGHT_ID = 17;
 
-        public static final double KICKER_PERCENT = 0.7;
-        public static final double INDEXER_PERCENT = 0.6;
+        public static final double KICKER_PERCENT = 0.8;
+        public static final double INDEXER_PERCENT = 0.7;
 
         public static final double DEFAULT_TARGET_RPS = 50.5;
         public static final double DEFAULT_HOOD_DEG = 0.0;
@@ -68,7 +68,7 @@ public final class Constants {
         public static final int MOTOR_ID = 19;
 
         public static final double MIN_DEG = 0.2;
-        public static final double MAX_DEG = 35.0;
+        public static final double MAX_DEG = 100.0;
         public static final double STEP_DEG = 3.0;
 
         public static final double CRUISE_VEL_RPS = 40.0;

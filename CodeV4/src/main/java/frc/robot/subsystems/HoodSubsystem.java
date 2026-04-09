@@ -36,7 +36,7 @@ public class HoodSubsystem extends SubsystemBase {
     cfg.MotionMagic.MotionMagicAcceleration = Constants.Hood.ACCEL_RPS2;
 
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     motor.getConfigurator().apply(cfg);
 

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.MathUtil;
@@ -31,19 +32,20 @@ import frc.robot.subsystems.LEDs.LEDState;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.ShotCalculator;
+import com.pathplanner.lib.auto.NamedCommands;
 
 public class RobotContainer {
-    private double driveScale = 0.5;
     private final double MaxSpeed =
-        1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * driveScale;
+        1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     private final double MaxAngularRate =
-        RotationsPerSecond.of(0.65).in(RadiansPerSecond);
+        RotationsPerSecond.of(0.95).in(RadiansPerSecond); 
 
     private final SwerveRequest.FieldCentric drive =
-        new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1)
-            .withRotationalDeadband(MaxAngularRate * 0.1)
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+    new SwerveRequest.FieldCentric()
+        .withDeadband(MaxSpeed * 0.1)
+        .withRotationalDeadband(MaxAngularRate * 0.1)
+        .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+        .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final CommandXboxController joystick = new CommandXboxController(0);
@@ -52,6 +54,7 @@ public class RobotContainer {
         TunerConstants.createDrivetrain();
 
     private final ShotCalculator shotCalc = new ShotCalculator(drivetrain);
+    private double driveScale = 0.6;
 
     private final IntakeSlapdownSubsystem intakeSlapdown = new IntakeSlapdownSubsystem();
     private final IntakeRollerSubsystem intakeRollers = new IntakeRollerSubsystem();
@@ -67,19 +70,55 @@ public class RobotContainer {
 
     private final SendableChooser<Command> autoChooser;
 
-    private final PIDController aimThetaPid = new PIDController(11.0, 0.0, 0.3);
+    private final PIDController aimThetaPid = new PIDController(12.0, 0.0, 0.3);
 
     private double filteredTargetRad = 0.0;
     private boolean targetInitialized = false;
 
     public RobotContainer() {
         aimThetaPid.enableContinuousInput(-Math.PI, Math.PI);
+        registerNamedCommands();
         autoChooser = AutoBuilder.buildAutoChooser();
 
         configureBindings();
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
         SmartDashboard.putData("ShotCalculator", shotCalc);
+    }
+
+    private void registerNamedCommands() {
+        NamedCommands.registerCommand(
+            "IntakeDeploy",
+            Commands.runOnce(() -> {
+                intakeSlapdown.up();      // travel position
+                intakeRollers.stop();
+                indexer.stop();
+            }, intakeSlapdown, intakeRollers, indexer)
+        );
+
+        NamedCommands.registerCommand(
+            "IntakeRun",
+            intake.holdDownAndIntake()
+        );
+
+        NamedCommands.registerCommand(
+            "IntakeStop",
+            intake.stopIntakeAndGoTravel()
+        );
+
+        NamedCommands.registerCommand(
+            "ShootInitialize",
+            Commands.parallel(
+                shooter.shootWhileHeld()
+            ).withTimeout(0.1)
+        );
+        NamedCommands.registerCommand(
+            "Shoot",
+            Commands.parallel(
+                shooter.shootWhileHeld(),
+                autoAimDrive()
+            ).withTimeout(6.0)
+        );
     }
 
     private Command autoAimDrive() {
@@ -131,9 +170,9 @@ public class RobotContainer {
             double targetRad;
 
             if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-                targetRad = 0.0;
-            } else {
                 targetRad = Math.PI;
+            } else {
+                targetRad = 0.0;
             }
 
             double errorRad = MathUtil.angleModulus(targetRad - currentRad);
@@ -161,6 +200,10 @@ public class RobotContainer {
             })
         );
 
+        joystick.leftBumper().onTrue(
+            drivetrain.runOnce(drivetrain::seedFieldCentric)
+        );
+
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
@@ -177,6 +220,14 @@ public class RobotContainer {
                 intake.holdDownAndIntake()
             )
         );
+
+        ltHeld.whileTrue(
+            Commands.run(
+                () -> shooter.setTargetRps(5.0),
+                shooter
+            )
+        );
+
 
         lt.onFalse(
             Commands.sequence(
@@ -221,7 +272,7 @@ public class RobotContainer {
 
         joystick.y().onTrue(
             Commands.runOnce(() -> {
-                driveScale = (driveScale == 0.5) ? 0.65 : 0.5;
+                driveScale = (driveScale == 0.6) ? 0.5 : 0.6;
             })
         );
 
