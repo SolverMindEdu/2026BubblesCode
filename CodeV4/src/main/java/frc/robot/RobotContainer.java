@@ -328,6 +328,8 @@ public class RobotContainer {
             )
         );
 
+        joystick.x().onTrue(intake.tapToggleUpTravel());
+
         joystick.rightTrigger().whileTrue(
             Commands.parallel(
                 shooter.shootWhileHeld(),

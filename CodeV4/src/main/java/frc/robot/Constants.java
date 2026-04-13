@@ -50,7 +50,7 @@ public final class Constants {
         public static final double PULSE_PERIOD_SEC = 1.0;
         public static final double PULSE_HALF_SEC = PULSE_PERIOD_SEC / 4.0;
         public static final double SHOOT_ASSIST_INTAKE_RPS = 30.0;
-        public static final double INTAKE_RAISE_DELAY_SEC = 1.9;
+        public static final double INTAKE_RAISE_DELAY_SEC = 2.5; //2.5
 
         public static final double LATCH_MIN_TIME_SEC = 0.8;
     }
@@ -68,7 +68,7 @@ public final class Constants {
         public static final int MOTOR_ID = 19;
 
         public static final double MIN_DEG = 0.2;
-        public static final double MAX_DEG = 100.0;
+        public static final double MAX_DEG = 320.0;
         public static final double STEP_DEG = 3.0;
 
         public static final double CRUISE_VEL_RPS = 40.0;
