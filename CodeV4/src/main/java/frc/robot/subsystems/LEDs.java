@@ -11,6 +11,7 @@ import com.ctre.phoenix6.signals.RGBWColor;
 import com.ctre.phoenix6.signals.StatusLedWhenActiveValue;
 import com.ctre.phoenix6.signals.StripTypeValue;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -124,6 +125,16 @@ public class LEDs extends SubsystemBase {
                 .withColor(new RGBWColor(0, 0, 255, 0))
         );
         break;
+    }
+  }
+  @Override
+  public void periodic() {
+    if (DriverStation.isAutonomousEnabled()) {
+      if (currentState != LEDState.AUTO_RAINBOW) {
+        setState(LEDState.AUTO_RAINBOW);
+      }
+    } else if (currentState == LEDState.AUTO_RAINBOW) {
+      setState(LEDState.IDLE_BLUE);
     }
   }
 }

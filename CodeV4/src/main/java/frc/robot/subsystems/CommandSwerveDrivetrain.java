@@ -282,10 +282,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void periodic() {
         var status = shiftLogic.getStatus();
         SmartDashboard.putBoolean("HUB Active", status.isActive);
-        SmartDashboard.putNumber("Shift Timer", status.timeLeftInShift);
+        SmartDashboard.putNumber("Phase Countdown", status.countdown);
         SmartDashboard.putNumber("Current Shift", status.currentShift);
-        SmartDashboard.putNumber("Shift Timer", DriverStation.getMatchTime());
-        SmartDashboard.putNumber("robot heading", this.getState().Pose.getRotation().getDegrees());
+        SmartDashboard.putString("Phase", status.phaseName);
+        SmartDashboard.putString("Hub Color", status.isActive ? "GREEN" : "RED");
+        SmartDashboard.putString("Game Data", DriverStation.getGameSpecificMessage());
 
     if (visionEnabled) {
         addLimelightVision("limelight");
@@ -309,14 +310,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         double headingDeg = getState().Pose.getRotation().getDegrees();
         double omegaDegPerSec = Math.toDegrees(getState().Speeds.omegaRadiansPerSecond);
 
-        // Tell this specific Limelight our current robot orientation
         LimelightHelpers.SetRobotOrientation(
             limelightName,
             headingDeg,
             0, 0, 0, 0, 0
         );
-
-        // Read MegaTag2 estimate from this same Limelight
         LimelightHelpers.PoseEstimate mt2 =
             LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
 

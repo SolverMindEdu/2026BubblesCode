@@ -125,88 +125,9 @@ public class RobotContainer {
 
     private void configureAutoChooser() {
         autoChooser.setDefaultOption("1.5 Swipe Right", new PathPlannerAuto("1.5SwipeRight"));
-        autoChooser.addOption("1.5 Swipe Left", buildMirroredOnePointFiveSwipeAuto());
-
         autoChooser.addOption("Single Swipe Right", new PathPlannerAuto("SingleSwipeRight"));
-        autoChooser.addOption("Single Swipe Left", buildMirroredSingleSwipeAuto());
-
         autoChooser.addOption("Far 1.5 Swipe Right", new PathPlannerAuto("Far1.5SwipeRight"));
-        autoChooser.addOption("Far 1.5 Swipe Left", buildMirroredFarOnePointFiveSwipeAuto());
-
         autoChooser.addOption("Far Single Swipe Right", new PathPlannerAuto("FarSingleSwipeRight"));
-        autoChooser.addOption("Far Single Swipe Left", buildMirroredFarSingleSwipeAuto());
-    }
-
-    private Command buildMirroredSingleSwipeAuto() {
-        try {
-            PathPlannerPath path = PathPlannerPath.fromPathFile("SingleSwipe");
-
-            return Commands.sequence(
-                AutoBuilder.followPath(path.mirrorPath()),
-                Commands.parallel(
-                    shooter.shootWhileHeld(),
-                    autoAimDrive()
-                ).withTimeout(6.0)
-            );
-        } catch (Exception e) {
-            DriverStation.reportError("SingleSwipeLeft failed", e.getStackTrace());
-            return Commands.none();
-        }
-    }
-
-    private Command buildMirroredFarSingleSwipeAuto() {
-        try {
-            PathPlannerPath path = PathPlannerPath.fromPathFile("SingleSwipeFar");
-
-            return Commands.sequence(
-                AutoBuilder.followPath(path.mirrorPath()),
-                Commands.parallel(
-                    shooter.shootWhileHeld(),
-                    autoAimDrive()
-                ).withTimeout(6.0)
-            );
-        } catch (Exception e) {
-            DriverStation.reportError("FarSingleSwipeLeft failed", e.getStackTrace());
-            return Commands.none();
-        }
-    }
-
-    private Command buildMirroredOnePointFiveSwipeAuto() {
-        try {
-            PathPlannerPath swipe = PathPlannerPath.fromPathFile("SingleSwipe");
-            PathPlannerPath returnPath = PathPlannerPath.fromPathFile("ReturnBackToCENTRE");
-
-            return Commands.sequence(
-                AutoBuilder.followPath(swipe.mirrorPath()),
-                Commands.parallel(
-                    shooter.shootWhileHeld(),
-                    autoAimDrive()
-                ).withTimeout(6.0),
-                AutoBuilder.followPath(returnPath.mirrorPath())
-            );
-        } catch (Exception e) {
-            DriverStation.reportError("1.5SwipeLeft failed", e.getStackTrace());
-            return Commands.none();
-        }
-    }
-
-    private Command buildMirroredFarOnePointFiveSwipeAuto() {
-        try {
-            PathPlannerPath swipe = PathPlannerPath.fromPathFile("SingleSwipeFar");
-            PathPlannerPath returnPath = PathPlannerPath.fromPathFile("ReturnBackToCENTRE");
-
-            return Commands.sequence(
-                AutoBuilder.followPath(swipe.mirrorPath()),
-                Commands.parallel(
-                    shooter.shootWhileHeld(),
-                    autoAimDrive()
-                ).withTimeout(6.0),
-                AutoBuilder.followPath(returnPath.mirrorPath())
-            );
-        } catch (Exception e) {
-            DriverStation.reportError("Far1.5SwipeLeft failed", e.getStackTrace());
-            return Commands.none();
-        }
     }
 
     private Command autoAimDrive() {
@@ -333,14 +254,16 @@ public class RobotContainer {
         joystick.rightTrigger().whileTrue(
             Commands.parallel(
                 shooter.shootWhileHeld(),
-                autoAimDrive()
+                autoAimDrive(),
+                Commands.run(() -> leds.setState(LEDs.LEDState.INTAKING_GREEN_FLASH), leds)
             )
         );
 
         joystick.b().whileTrue(
             Commands.parallel(
                 shooter.shootWhileHeld(),
-                autoAlignPassDrive()
+                autoAlignPassDrive(),
+                Commands.run(() -> leds.setState(LEDs.LEDState.PASSING_YELLOW_FLASH), leds)
             )
         );
 
@@ -348,7 +271,7 @@ public class RobotContainer {
             .whileTrue(intake.holdReverseJamClear())
             .onFalse(intake.stopIntakeAndGoTravel());
 
-        joystick.x().onTrue(
+        joystick.rightBumper().onTrue(
             Commands.runOnce(() -> {
                 hood.setTargetDegrees(Constants.Hood.MIN_DEG);
                 intakeSlapdown.up();
