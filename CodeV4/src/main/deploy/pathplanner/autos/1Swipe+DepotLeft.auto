@@ -7,7 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "SingleSwipeFar"
+            "pathName": "LeftSingleSwipe"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootDepot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepotSwipe"
           }
         },
         {
@@ -19,13 +31,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "ReturnBackToCENTRE1"
+            "pathName": "LeftDepotReturnBackToCENTRE"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Right",
+  "folder": "Left",
   "choreoAuto": false
 }

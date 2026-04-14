@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "SingleSwipeFar"
+            "pathName": "LeftSingleSwipe"
           }
         },
         {
@@ -20,6 +20,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Right",
+  "folder": "Left",
   "choreoAuto": false
 }

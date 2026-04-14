@@ -55,7 +55,7 @@ public class RobotContainer {
         TunerConstants.createDrivetrain();
 
     private final ShotCalculator shotCalc = new ShotCalculator(drivetrain);
-    private double driveScale = 0.6;
+    private double driveScale = 0.57;
 
     private final IntakeSlapdownSubsystem intakeSlapdown = new IntakeSlapdownSubsystem();
     private final IntakeRollerSubsystem intakeRollers = new IntakeRollerSubsystem();
@@ -121,6 +121,14 @@ public class RobotContainer {
                 autoAimDrive()
             ).withTimeout(6.0)
         );
+
+        NamedCommands.registerCommand(
+            "ShootDepot",
+            Commands.parallel(
+                shooter.shootWhileHeld(),
+                autoAimDrive()
+            ).withTimeout(4.0)
+        );
     }
 
     private void configureAutoChooser() {
@@ -128,6 +136,9 @@ public class RobotContainer {
         autoChooser.addOption("Single Swipe Right", new PathPlannerAuto("SingleSwipeRight"));
         autoChooser.addOption("Far 1.5 Swipe Right", new PathPlannerAuto("Far1.5SwipeRight"));
         autoChooser.addOption("Far Single Swipe Right", new PathPlannerAuto("FarSingleSwipeRight"));
+        autoChooser.addOption("1.5 Swipe Left", new PathPlannerAuto("1.5SwipeLeft"));
+        autoChooser.addOption("Single Swipe Left", new PathPlannerAuto("SingleSwipeLeft"));
+        autoChooser.addOption("1Swipe+Depot Left", new PathPlannerAuto("1Swipe+DepotLeft"));
     }
 
     private Command autoAimDrive() {
@@ -284,7 +295,7 @@ public class RobotContainer {
 
         joystick.y().onTrue(
             Commands.runOnce(() -> {
-                driveScale = (driveScale == 0.6) ? 0.5 : 0.6;
+                driveScale = (driveScale == 0.57) ? 0.45 : 0.57;
             })
         );
 
