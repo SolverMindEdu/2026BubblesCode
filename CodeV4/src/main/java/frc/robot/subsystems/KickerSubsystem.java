@@ -42,4 +42,9 @@ public class KickerSubsystem extends SubsystemBase {
     public void stop() {
         run(0.0);
     }
+
+    public boolean isConnected() {
+    return leftKickerMotor.isConnected() &&
+           rightKickerMotor.isConnected();
+    }
 }

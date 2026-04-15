@@ -86,4 +86,8 @@ public class HoodSubsystem extends SubsystemBase {
   private static double motorRotationsToDegrees(double motorRot) {
     return motorRot / MOTOR_ROTATIONS_PER_DEGREE;
   }
+
+  public boolean isConnected() {
+    return motor.isConnected();
+  }
 }

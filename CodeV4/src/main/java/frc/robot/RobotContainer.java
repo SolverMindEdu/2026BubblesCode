@@ -69,9 +69,20 @@ public class RobotContainer {
     private final Shooter shooter =
         new Shooter(shooterSubsystem, kicker, indexer, hood, shotCalc, intakeSlapdown, intakeRollers);
 
+    private final SwerveRequest.SwerveDriveBrake xLock = new SwerveRequest.SwerveDriveBrake();
     private final SendableChooser<Command> autoChooser = new SendableChooser<>();
-
     private final PIDController aimThetaPid = new PIDController(12.0, 0.0, 0.3);
+    private final RobotPrecheck precheck =
+    new RobotPrecheck(
+        intakeSlapdown,
+        intakeRollers,
+        indexer,
+        shooterSubsystem,
+        hood,
+        leds,
+        drivetrain,
+        kicker
+    );
 
     private double filteredTargetRad = 0.0;
     private boolean targetInitialized = false;
@@ -85,6 +96,10 @@ public class RobotContainer {
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
         SmartDashboard.putData("ShotCalculator", shotCalc);
+    }
+
+    public RobotPrecheck getPrecheck() {
+        return precheck;
     }
 
     private void registerNamedCommands() {
@@ -139,6 +154,8 @@ public class RobotContainer {
         autoChooser.addOption("1.5 Swipe Left", new PathPlannerAuto("1.5SwipeLeft"));
         autoChooser.addOption("Single Swipe Left", new PathPlannerAuto("SingleSwipeLeft"));
         autoChooser.addOption("1Swipe+Depot Left", new PathPlannerAuto("1Swipe+DepotLeft"));
+        autoChooser.addOption("Far 1.5 Swipe Left", new PathPlannerAuto("Far1.5SwipeLeft"));
+        autoChooser.addOption("Middle Depot", new PathPlannerAuto("MiddleDepotAuto"));
     }
 
     private Command autoAimDrive() {
@@ -148,12 +165,21 @@ public class RobotContainer {
             double targetRad = p.robotHeadingRadians();
             double currentRad = drivetrain.getState().Pose.getRotation().getRadians();
 
-            double xCmd = -joystick.getLeftY() * MaxSpeed * 0.5;
-            double yCmd = -joystick.getLeftX() * MaxSpeed * 0.5;
+            double leftY = -joystick.getLeftY();
+            double leftX = -joystick.getLeftX();
+            double rightX = -joystick.getRightX();
+
+            double xCmd = leftY * MaxSpeed * 0.5;
+            double yCmd = leftX * MaxSpeed * 0.5;
+
+            boolean driverTransOverride =
+                Math.abs(leftY) > 0.12 || Math.abs(leftX) > 0.12;
+            boolean driverRotOverride =
+                Math.abs(rightX) > 0.12;
 
             if (!Double.isFinite(targetRad)) {
                 targetInitialized = false;
-                double rotCmd = -joystick.getRightX() * MaxAngularRate;
+                double rotCmd = rightX * MaxAngularRate;
                 return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
             }
 
@@ -167,8 +193,17 @@ public class RobotContainer {
 
             double errorRad = MathUtil.angleModulus(filteredTargetRad - currentRad);
 
+            if (driverRotOverride) {
+                double rotCmd = rightX * MaxAngularRate;
+                return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
+            }
+
             if (Math.abs(errorRad) < Math.toRadians(1.0)) {
-                return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(0.0);
+                if (!driverTransOverride) {
+                    return xLock;
+                } else {
+                    return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(0.0);
+                }
             }
 
             double omegaCmd = aimThetaPid.calculate(currentRad, filteredTargetRad);

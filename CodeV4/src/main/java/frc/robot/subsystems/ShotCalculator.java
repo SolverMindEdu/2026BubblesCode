@@ -63,9 +63,10 @@ public class ShotCalculator extends SubsystemBase {
     passingShotFlywheelSpeedMap.put(7.5, 70.0);
     passingShotFlywheelSpeedMap.put(8.5, 73.0);
     passingShotFlywheelSpeedMap.put(9.0, 80.0);
-    // passingTimeOfFlightMap.put(1.64227, 0.93);
-    // passingTimeOfFlightMap.put(5.0, 1.10);
-    // passingTimeOfFlightMap.put(7.5, 1.30);
+    passingTimeOfFlightMap.put(1.64227, 0.93);
+    passingTimeOfFlightMap.put(7.5, 1.10);
+    passingTimeOfFlightMap.put(8.5, 1.30);
+    passingTimeOfFlightMap.put(9.5, 1.30);
   }
 
   private static final InterpolatingTreeMap<Double, Rotation2d> shotHoodAngleMap =

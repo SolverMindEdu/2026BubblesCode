@@ -27,7 +27,7 @@ public final class Constants {
       public static final double TOLERANCE_ROT = 0.05;
 
       public static final double ROLLER_RPS = 65.0;
-      public static final double INDEXER_PERCENT = 0.2;
+      public static final double INDEXER_PERCENT = 0.35;
 
       public static final double CRUISE_VEL_RPS = 75.0;
       public static final double ACCEL_RPS2 = 60.0;
