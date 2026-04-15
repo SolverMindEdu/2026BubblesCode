@@ -29,4 +29,8 @@ public class IndexerSubsystem extends SubsystemBase {
     public void stop() {
         run(0.0);
     }
+
+    public boolean isConnected() {
+        return indexermotor.isConnected();
+    }
 }

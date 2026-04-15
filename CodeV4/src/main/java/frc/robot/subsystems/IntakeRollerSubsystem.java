@@ -60,6 +60,10 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     roller.setControl(percentRequest.withOutput(0.0));
   }
 
+  public boolean isConnected() {
+    return roller.isConnected();
+  }
+
   @Override
   public void periodic() {
     SmartDashboard.putNumber("IntakeRoller/StatorCurrent", roller.getStatorCurrent().getValueAsDouble());

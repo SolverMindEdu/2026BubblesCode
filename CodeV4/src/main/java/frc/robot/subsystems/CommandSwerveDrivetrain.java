@@ -280,6 +280,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     @Override
     public void periodic() {
+        SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
+
         var status = shiftLogic.getStatus();
         SmartDashboard.putBoolean("HUB Active", status.isActive);
         SmartDashboard.putNumber("Phase Countdown", status.countdown);

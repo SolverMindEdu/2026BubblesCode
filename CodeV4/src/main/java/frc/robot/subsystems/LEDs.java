@@ -127,6 +127,11 @@ public class LEDs extends SubsystemBase {
         break;
     }
   }
+
+  public boolean isConnected() {
+    return candle.isConnected();
+  }
+
   @Override
   public void periodic() {
     if (DriverStation.isAutonomousEnabled()) {

@@ -151,4 +151,8 @@ public class IntakeSlapdownSubsystem extends SubsystemBase {
   public void stop() {
     motor.set(0.0);
   }
+
+  public boolean isConnected() {
+    return motor.isConnected();
+  }
 }

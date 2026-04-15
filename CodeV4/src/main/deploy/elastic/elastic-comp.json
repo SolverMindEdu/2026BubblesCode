@@ -3,7 +3,7 @@
   "grid_size": 128,
   "tabs": [
     {
-      "name": "Tab 2",
+      "name": "Comp",
       "grid_layout": {
         "layouts": [
           {
@@ -11,7 +11,7 @@
             "x": 1408.0,
             "y": 0.0,
             "width": 256.0,
-            "height": 256.0,
+            "height": 384.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -44,6 +44,37 @@
                   "data_type": "double",
                   "show_submit_button": false
                 }
+              },
+              {
+                "title": "robot heading",
+                "x": 1408.0,
+                "y": 128.0,
+                "width": 256.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/robot heading",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "IsPassing",
+                "x": 1408.0,
+                "y": 256.0,
+                "width": 256.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/SmartDashboard/Shot/IsPassing",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
               }
             ]
           }
@@ -51,9 +82,9 @@
         "containers": [
           {
             "title": "FMSInfo",
-            "x": 768.0,
-            "y": 512.0,
-            "width": 384.0,
+            "x": 1152.0,
+            "y": 640.0,
+            "width": 512.0,
             "height": 128.0,
             "type": "FMSInfo",
             "properties": {
@@ -77,15 +108,15 @@
               "show_other_objects": true,
               "show_trajectories": true,
               "field_rotation": 0.0,
-              "robot_color": 4294198070,
-              "trajectory_color": 4294967295,
+              "robot_color": 4291166463,
+              "trajectory_color": 4282253056,
               "show_robot_outside_widget": true
             }
           },
           {
             "title": "Auto Chooser",
-            "x": 1152.0,
-            "y": 512.0,
+            "x": 1408.0,
+            "y": 384.0,
             "width": 256.0,
             "height": 128.0,
             "type": "ComboBox Chooser",
@@ -109,14 +140,27 @@
             }
           },
           {
-            "title": "IsPassing",
-            "x": 1408.0,
+            "title": "limelight-side",
+            "x": 0.0,
             "y": 384.0,
+            "width": 512.0,
+            "height": 384.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-side",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "HUB Active",
+            "x": 896.0,
+            "y": 512.0,
             "width": 256.0,
-            "height": 128.0,
+            "height": 256.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Shot/IsPassing",
+              "topic": "/SmartDashboard/HUB Active",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -126,17 +170,37 @@
             }
           },
           {
-            "title": "robot heading",
-            "x": 1408.0,
-            "y": 256.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
+            "title": "Phase Countdown",
+            "x": 512.0,
+            "y": 512.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Match Time",
             "properties": {
-              "topic": "/SmartDashboard/robot heading",
+              "topic": "/SmartDashboard/Phase Countdown",
               "period": 0.06,
               "data_type": "double",
-              "show_submit_button": false
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 20,
+              "yellow_start_time": 30
+            }
+          },
+          {
+            "title": "Battery Voltage",
+            "x": 1152.0,
+            "y": 512.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Voltage View",
+            "properties": {
+              "topic": "/SmartDashboard/Battery Voltage",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 4.0,
+              "max_value": 13.0,
+              "divisions": 5,
+              "inverted": false,
+              "orientation": "horizontal"
             }
           }
         ]

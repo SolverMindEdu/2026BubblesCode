@@ -92,4 +92,16 @@ public class ShooterSubsystem extends SubsystemBase {
 
     return atSpeedDebounce.calculate(within);
   }
+
+  public boolean isConnectedLeft() {
+    return shooterLeft.isConnected();
+  }
+
+  public boolean isConnectedMiddle() {
+    return shooterMiddle.isConnected();
+  }
+
+  public boolean isConnectedRight() {
+    return shooterRight.isConnected();
+  }
 }

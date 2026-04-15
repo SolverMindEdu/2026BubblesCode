@@ -18,13 +18,21 @@ public class RebuiltShiftLogic {
 
     public static class ShiftStatus {
         public final boolean isActive;
+        public final boolean isWarning;
         public final double countdown;
         public final int currentShift;
         public final Phase phase;
         public final String phaseName;
 
-        public ShiftStatus(boolean isActive, double countdown, int currentShift, Phase phase, String phaseName) {
+        public ShiftStatus(
+                boolean isActive,
+                boolean isWarning,
+                double countdown,
+                int currentShift,
+                Phase phase,
+                String phaseName) {
             this.isActive = isActive;
+            this.isWarning = isWarning;
             this.countdown = countdown;
             this.currentShift = currentShift;
             this.phase = phase;
@@ -38,59 +46,98 @@ public class RebuiltShiftLogic {
         var alliance = DriverStation.getAlliance();
 
         if (matchTime < 0) {
-            return new ShiftStatus(false, 0.0, 0, Phase.UNKNOWN, "UNKNOWN");
+            return new ShiftStatus(false, false, 0.0, 0, Phase.UNKNOWN, "UNKNOWN");
         }
 
-        // Your requested display logic:
-        // AUTO:       150 -> 130   (20s)
-        // TRANSITION: 130 -> 120   (10s)
-        // SHIFT 1:    120 -> 95    (25s)
-        // SHIFT 2:    95  -> 70    (25s)
-        // SHIFT 3:    70  -> 45    (25s)
-        // SHIFT 4:    45  -> 20    (25s)
-        // ENDGAME:    20  -> 0     (20s by this math)
+        // AUTO: 0:20 -> 0:00
+        // DriverStation teleop-style matchTime approximation usually maps this as 20 -> 0
+        if (DriverStation.isAutonomousEnabled()) {
+            double countdown = clampNonNegative(matchTime);
+            return new ShiftStatus(true, countdown <= 10.0, countdown, 0, Phase.AUTO, "AUTO");
+        }
+
+        // If not teleop enabled yet, we cannot reliably classify further
+        if (!DriverStation.isTeleopEnabled()) {
+            return new ShiftStatus(false, false, 0.0, 0, Phase.UNKNOWN, "UNKNOWN");
+        }
+
+        // TELEOP official phase boundaries:
+        // Transition: 2:20 -> 2:10  = 140 -> 130
+        // Shift 1:    2:10 -> 1:45  = 130 -> 105
+        // Shift 2:    1:45 -> 1:20  = 105 -> 80
+        // Shift 3:    1:20 -> 0:55  = 80  -> 55
+        // Shift 4:    0:55 -> 0:30  = 55  -> 30
+        // End Game:   0:30 -> 0:00  = 30  -> 0
         //
-        // If you truly want ENDGAME to display 30s instead, that is a custom display choice.
-        // See note below.
-
-        if (matchTime > 130.0) {
-            return new ShiftStatus(true, matchTime - 130.0, 0, Phase.AUTO, "AUTO");
-        }
-
-        if (matchTime > 120.0) {
-            return new ShiftStatus(false, matchTime - 120.0, 0, Phase.TRANSITION, "TRANSITION");
-        }
+        // WPILib notes matchTime is approximate, so use game data for hub order. 
+        // If game data is missing early in teleop, assume both are effectively safe to treat as active
+        // until the shift logic can be determined.
 
         boolean weWonAuto = false;
+        boolean haveWinner = false;
+
         if (!gameData.isEmpty() && alliance.isPresent()) {
             char winner = gameData.charAt(0);
-            weWonAuto =
-                (alliance.get() == Alliance.Red && winner == 'R') ||
-                (alliance.get() == Alliance.Blue && winner == 'B');
+            if (winner == 'R' || winner == 'B') {
+                haveWinner = true;
+                weWonAuto =
+                    (alliance.get() == Alliance.Red && winner == 'R') ||
+                    (alliance.get() == Alliance.Blue && winner == 'B');
+            }
         }
 
-        if (matchTime > 95.0) {
-            return buildShiftStatus(1, 95.0, matchTime, weWonAuto);
-        } else if (matchTime > 70.0) {
-            return buildShiftStatus(2, 70.0, matchTime, weWonAuto);
-        } else if (matchTime > 45.0) {
-            return buildShiftStatus(3, 45.0, matchTime, weWonAuto);
-        } else if (matchTime > 20.0) {
-            return buildShiftStatus(4, 20.0, matchTime, weWonAuto);
-        } else {
-            return new ShiftStatus(true, matchTime, 0, Phase.ENDGAME, "ENDGAME");
+        // Transition Shift: 140 -> 130
+        if (matchTime > 130.0) {
+            double countdown = matchTime - 130.0;
+            return new ShiftStatus(true, countdown <= 10.0, countdown, 0, Phase.TRANSITION, "TRANSITION");
         }
+
+        // Shift 1: 130 -> 105
+        if (matchTime > 105.0) {
+            return buildShiftStatus(1, 105.0, matchTime, haveWinner, weWonAuto);
+        }
+
+        // Shift 2: 105 -> 80
+        if (matchTime > 80.0) {
+            return buildShiftStatus(2, 80.0, matchTime, haveWinner, weWonAuto);
+        }
+
+        // Shift 3: 80 -> 55
+        if (matchTime > 55.0) {
+            return buildShiftStatus(3, 55.0, matchTime, haveWinner, weWonAuto);
+        }
+
+        // Shift 4: 55 -> 30
+        if (matchTime > 30.0) {
+            return buildShiftStatus(4, 30.0, matchTime, haveWinner, weWonAuto);
+        }
+
+        // End Game: 30 -> 0
+        double countdown = clampNonNegative(matchTime);
+        return new ShiftStatus(true, countdown <= 10.0, countdown, 0, Phase.ENDGAME, "ENDGAME");
     }
 
-    private ShiftStatus buildShiftStatus(int shiftNumber, double lowerBound, double matchTime, boolean weWonAuto) {
-        double countdown = matchTime - lowerBound;
+    private ShiftStatus buildShiftStatus(
+            int shiftNumber,
+            double lowerBound,
+            double matchTime,
+            boolean haveWinner,
+            boolean weWonAuto) {
 
+        double countdown = clampNonNegative(matchTime - lowerBound);
+
+        // If no valid game data yet, assume active until FMS data appears.
         boolean active;
-        if (weWonAuto) {
+        if (!haveWinner) {
+            active = true;
+        } else if (weWonAuto) {
+            // Winner inactive in Shift 1, then alternate
             active = (shiftNumber == 2 || shiftNumber == 4);
         } else {
             active = (shiftNumber == 1 || shiftNumber == 3);
         }
+
+        boolean warning = countdown <= 10.0;
 
         Phase phase = switch (shiftNumber) {
             case 1 -> Phase.SHIFT_1;
@@ -100,6 +147,10 @@ public class RebuiltShiftLogic {
             default -> Phase.UNKNOWN;
         };
 
-        return new ShiftStatus(active, countdown, shiftNumber, phase, "SHIFT " + shiftNumber);
+        return new ShiftStatus(active, warning, countdown, shiftNumber, phase, "SHIFT " + shiftNumber);
+    }
+
+    private double clampNonNegative(double value) {
+        return Math.max(0.0, value);
     }
 }
