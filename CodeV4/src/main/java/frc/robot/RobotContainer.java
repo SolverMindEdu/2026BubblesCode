@@ -43,7 +43,7 @@ public class RobotContainer {
         1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
 
     private final double MaxAngularRate =
-        RotationsPerSecond.of(1.8).in(RadiansPerSecond);
+        RotationsPerSecond.of(1.4).in(RadiansPerSecond);
 
     private final SwerveRequest.FieldCentric drive =
         new SwerveRequest.FieldCentric()
@@ -60,7 +60,7 @@ public class RobotContainer {
         TunerConstants.createDrivetrain();
 
     private final ShotCalculator shotCalc = new ShotCalculator(drivetrain);
-    private double driveScale = 0.57;
+    private double driveScale = 0.55;
     BooleanSupplier isIdle = () -> joystick.rightTrigger().getAsBoolean() && updateIdleStatus();
 
     private final IntakeSlapdownSubsystem intakeSlapdown = new IntakeSlapdownSubsystem();
