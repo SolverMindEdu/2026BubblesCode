@@ -8,6 +8,8 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -85,6 +87,45 @@ public class HoodSubsystem extends SubsystemBase {
 
   private static double motorRotationsToDegrees(double motorRot) {
     return motorRot / MOTOR_ROTATIONS_PER_DEGREE;
+  }
+
+  public void runPercent(double percent) {
+    motor.set(percent);
+  }
+
+  public void setEncoderZero() {
+    motor.setPosition(0.0);
+    targetDeg = 0.0;
+  }
+
+  public Command zeroRoutine() {
+    return Commands.sequence(
+        Commands.runOnce(() -> {
+          double startRot = motor.getPosition().getValueAsDouble();
+          double targetRot = startRot - 5.0;
+
+          runPercent(-0.15);
+
+          this.zeroTargetRot = targetRot;
+        }, this),
+
+        Commands.run(() -> {
+          runPercent(-0.15);
+        }, this)
+            .until(() -> motor.getPosition().getValueAsDouble() <= zeroTargetRot)
+            .withTimeout(1.0),
+
+        Commands.runOnce(() -> {
+          stop();
+          setEncoderZero();
+        }, this)
+    );
+  }
+
+  private double zeroTargetRot = 0.0;
+
+  public void zeroPosition() {
+    setEncoderZero();
   }
 
   public boolean isConnected() {

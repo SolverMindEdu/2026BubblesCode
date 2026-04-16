@@ -3,6 +3,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -19,8 +20,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.HoodSubsystem;
@@ -50,12 +54,14 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final CommandXboxController joystick = new CommandXboxController(0);
+    private boolean isIdleActive = false;
 
     public final CommandSwerveDrivetrain drivetrain =
         TunerConstants.createDrivetrain();
 
     private final ShotCalculator shotCalc = new ShotCalculator(drivetrain);
     private double driveScale = 0.57;
+    BooleanSupplier isIdle = () -> joystick.rightTrigger().getAsBoolean() && updateIdleStatus();
 
     private final IntakeSlapdownSubsystem intakeSlapdown = new IntakeSlapdownSubsystem();
     private final IntakeRollerSubsystem intakeRollers = new IntakeRollerSubsystem();
@@ -158,6 +164,28 @@ public class RobotContainer {
         autoChooser.addOption("Middle Depot", new PathPlannerAuto("MiddleDepotAuto"));
     }
 
+    public boolean updateIdleStatus() {
+        double error = Math.abs(Math.toDegrees(
+            MathUtil.angleModulus(filteredTargetRad - drivetrain.getState().Pose.getRotation().getRadians())
+        ));
+        boolean inputOutsideDeadband =
+            Math.abs(joystick.getLeftX()) > 0.12 ||
+            Math.abs(joystick.getLeftY()) > 0.12 ||
+            Math.abs(joystick.getRightX()) > 0.12;
+
+        if (inputOutsideDeadband || DriverStation.isAutonomous()) {
+            isIdleActive = false;
+        } else if (error < 1.0) {
+            isIdleActive = true;
+        } else if (error > 3.5) {
+            isIdleActive = false;
+        }
+
+        return isIdleActive;
+    }
+
+    private boolean xLockActive = false;
+
     private Command autoAimDrive() {
         return drivetrain.applyRequest(() -> {
             var p = shotCalc.getParameters();
@@ -179,6 +207,7 @@ public class RobotContainer {
 
             if (!Double.isFinite(targetRad)) {
                 targetInitialized = false;
+                xLockActive = false;
                 double rotCmd = rightX * MaxAngularRate;
                 return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
             }
@@ -191,21 +220,33 @@ public class RobotContainer {
                 filteredTargetRad = MathUtil.angleModulus(filteredTargetRad + delta * 0.2);
             }
 
-            double errorRad = MathUtil.angleModulus(filteredTargetRad - currentRad);
+            double errorDeg = Math.abs(Math.toDegrees(MathUtil.angleModulus(filteredTargetRad - currentRad)));
+
+            SmartDashboard.putNumber("AimErrorDeg", errorDeg);
+            SmartDashboard.putBoolean("XLockActive", xLockActive);
 
             if (driverRotOverride) {
+                xLockActive = false;
                 double rotCmd = rightX * MaxAngularRate;
                 return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(rotCmd);
             }
 
-            if (Math.abs(errorRad) < Math.toRadians(1.0)) {
-                if (!driverTransOverride) {
-                    return xLock;
-                } else {
-                    return drive.withVelocityX(xCmd).withVelocityY(yCmd).withRotationalRate(0.0);
-                }
+            if (driverTransOverride) {
+                xLockActive = false;
             }
 
+            // Hysteresis: engage at 1°, disengage at 3°
+            if (errorDeg < 0.2 && !driverTransOverride) {
+                xLockActive = true;
+            } else if (errorDeg > 4.0) {
+                xLockActive = false;
+            }
+
+            if (xLockActive) {
+                return xLock;
+            }
+
+            double errorRad = MathUtil.angleModulus(filteredTargetRad - currentRad);
             double omegaCmd = aimThetaPid.calculate(currentRad, filteredTargetRad);
             double autoAimMaxOmega = RotationsPerSecond.of(0.5).in(RadiansPerSecond);
             omegaCmd = MathUtil.clamp(omegaCmd, -autoAimMaxOmega, autoAimMaxOmega);
@@ -255,6 +296,16 @@ public class RobotContainer {
             })
         );
 
+        // BooleanSupplier isIdle = () -> updateIdleStatus();
+
+        // new Trigger(isIdle)
+        //     .whileTrue(
+        //         new SequentialCommandGroup(
+        //             new WaitCommand(0.01),
+        //             drivetrain.applyRequest(() -> new SwerveRequest.SwerveDriveBrake())
+        //         )
+        //     );
+
         joystick.leftBumper().onTrue(
             drivetrain.runOnce(drivetrain::seedFieldCentric)
         );
@@ -278,7 +329,7 @@ public class RobotContainer {
 
         ltHeld.whileTrue(
             Commands.run(
-                () -> shooter.setTargetRps(5.0),
+                () -> shooter.setTargetRps(10.0),
                 shooter
             )
         );
@@ -294,8 +345,6 @@ public class RobotContainer {
                 Commands.runOnce(() -> holdStarted[0] = false)
             )
         );
-
-        joystick.x().onTrue(intake.tapToggleUpTravel());
 
         joystick.rightTrigger().whileTrue(
             Commands.parallel(
@@ -330,8 +379,14 @@ public class RobotContainer {
 
         joystick.y().onTrue(
             Commands.runOnce(() -> {
-                driveScale = (driveScale == 0.57) ? 0.45 : 0.57;
+                driveScale = (driveScale == 0.57) ? 0.45
+                        : (driveScale == 0.45) ? 0.7
+                        : 0.57;
             })
+        );
+
+        joystick.povDown().onTrue(
+            hood.zeroRoutine()
         );
 
         drivetrain.registerTelemetry(logger::telemeterize);

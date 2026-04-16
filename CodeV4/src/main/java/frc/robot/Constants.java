@@ -13,14 +13,14 @@ public final class Constants {
       public static final int SLAPDOWN_ID = 13;
 
       public static final double UP_LIMIT_ROT = 0.0;
-      public static final double DOWN_LIMIT_ROT = 19.5;
+      public static final double DOWN_LIMIT_ROT = 19.3;
 
       public static final double UP_ROT = 0.05;
       public static final double TRAVEL_ROT = 16.0;
       public static final double SHOOT_ROT = 20.0;
-      public static final double DOWN_ROT = 19.5;
+      public static final double DOWN_ROT = 19.3;
 
-      public static final double kP = 10.5;
+      public static final double kP = 10.5; 
       public static final double kI = 0.0;
       public static final double kD = 0.1;
 
@@ -52,7 +52,7 @@ public final class Constants {
         public static final double SHOOT_ASSIST_INTAKE_RPS = 30.0;
         public static final double INTAKE_RAISE_DELAY_SEC = 2.5;
 
-        public static final double LATCH_MIN_TIME_SEC = 0.8;
+        public static final double LATCH_MIN_TIME_SEC = 0.85;
     }
 
     public static final class Indexer {
@@ -71,8 +71,8 @@ public final class Constants {
         public static final double MAX_DEG = 320.0;
         public static final double STEP_DEG = 3.0;
 
-        public static final double CRUISE_VEL_RPS = 40.0;
-        public static final double ACCEL_RPS2 = 30.0;
+        public static final double CRUISE_VEL_RPS = 80.0;
+        public static final double ACCEL_RPS2 = 80.0;
     }
 
     public static final class LED {
