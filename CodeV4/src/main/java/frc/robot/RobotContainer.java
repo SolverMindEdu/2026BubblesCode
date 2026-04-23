@@ -327,12 +327,12 @@ public class RobotContainer {
             )
         );
 
-        ltHeld.whileTrue(
-            Commands.run(
-                () -> shooter.setTargetRps(10.0),
-                shooter
-            )
-        );
+        // ltHeld.whileTrue(
+        //     Commands.run(
+        //         () -> shooter.setTargetRps(10.0),
+        //         shooter
+        //     )
+        // );
 
         lt.onFalse(
             Commands.sequence(

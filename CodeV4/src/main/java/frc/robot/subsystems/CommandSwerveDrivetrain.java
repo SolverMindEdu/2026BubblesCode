@@ -292,14 +292,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putString("Hub Color", status.isActive ? "GREEN" : "RED");
         SmartDashboard.putString("Game Data", DriverStation.getGameSpecificMessage());
 
-    if (visionEnabled) {
-        addPreferredLimelightVision();
-    }
-
     // if (visionEnabled) {
-    //     addLimelightVision("limelight");
-    //     addLimelightVision("limelight-side");
+    //     addPreferredLimelightVision();
     // }
+
+    if (visionEnabled) {
+        addLimelightVision("limelight");
+        addLimelightVision("limelight-side");
+    }
 
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
                 DriverStation.getAlliance().ifPresent(allianceColor -> {
@@ -314,56 +314,56 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         
     }
 
-    private void addPreferredLimelightVision() {
-        // Prefer front limelight
-        boolean frontAccepted = tryAddLimelightVision("limelight");
+    // private void addPreferredLimelightVision() {
+    //     // Prefer front limelight
+    //     boolean frontAccepted = tryAddLimelightVision("limelight");
 
-        // Only use side limelight if front does NOT have a usable tag solution
-        if (!frontAccepted) {
-            tryAddLimelightVision("limelight-side");
-        } else {
-            SmartDashboard.putBoolean("limelight-side accepted", false);
-            SmartDashboard.putString("Vision/Source", "limelight");
-        }
-    }
+    //     // Only use side limelight if front does NOT have a usable tag solution
+    //     if (!frontAccepted) {
+    //         tryAddLimelightVision("limelight-side");
+    //     } else {
+    //         SmartDashboard.putBoolean("limelight-side accepted", false);
+    //         SmartDashboard.putString("Vision/Source", "limelight");
+    //     }
+    // }
 
-    private boolean tryAddLimelightVision(String limelightName) {
-        double headingDeg = getState().Pose.getRotation().getDegrees();
-        double omegaDegPerSec = Math.toDegrees(getState().Speeds.omegaRadiansPerSecond);
+    // private boolean tryAddLimelightVision(String limelightName) {
+    //     double headingDeg = getState().Pose.getRotation().getDegrees();
+    //     double omegaDegPerSec = Math.toDegrees(getState().Speeds.omegaRadiansPerSecond);
 
-        LimelightHelpers.SetRobotOrientation(
-            limelightName,
-            headingDeg,
-            0, 0, 0, 0, 0
-        );
+    //     LimelightHelpers.SetRobotOrientation(
+    //         limelightName,
+    //         headingDeg,
+    //         0, 0, 0, 0, 0
+    //     );
 
-        LimelightHelpers.PoseEstimate mt2 =
-            LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
+    //     LimelightHelpers.PoseEstimate mt2 =
+    //         LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
 
-        boolean reject = false;
+    //     boolean reject = false;
 
-        if (Math.abs(omegaDegPerSec) > 360.0) {
-            reject = true;
-        }
+    //     if (Math.abs(omegaDegPerSec) > 360.0) {
+    //         reject = true;
+    //     }
 
-        if (mt2 == null || mt2.tagCount == 0) {
-            reject = true;
-        }
+    //     if (mt2 == null || mt2.tagCount == 0) {
+    //         reject = true;
+    //     }
 
-        if (!reject) {
-            setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
-            addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+    //     if (!reject) {
+    //         setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+    //         addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
 
-            SmartDashboard.putBoolean(limelightName + " accepted", true);
-            SmartDashboard.putNumber(limelightName + " tagCount", mt2.tagCount);
-            SmartDashboard.putString("Vision/Source", limelightName);
-            return true;
-        }
+    //         SmartDashboard.putBoolean(limelightName + " accepted", true);
+    //         SmartDashboard.putNumber(limelightName + " tagCount", mt2.tagCount);
+    //         SmartDashboard.putString("Vision/Source", limelightName);
+    //         return true;
+    //     }
 
-        SmartDashboard.putBoolean(limelightName + " accepted", false);
-        SmartDashboard.putNumber(limelightName + " tagCount", mt2 != null ? mt2.tagCount : 0);
-        return false;
-    }
+    //     SmartDashboard.putBoolean(limelightName + " accepted", false);
+    //     SmartDashboard.putNumber(limelightName + " tagCount", mt2 != null ? mt2.tagCount : 0);
+    //     return false;
+    // }
 
     private void addLimelightVision(String limelightName) {
         double headingDeg = getState().Pose.getRotation().getDegrees();

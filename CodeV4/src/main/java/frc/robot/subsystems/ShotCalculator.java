@@ -92,17 +92,17 @@ public class ShotCalculator extends SubsystemBase {
     shotHoodAngleMap.put(4.6, Rotation2d.fromDegrees(210.0));
     shotHoodAngleMap.put(5.2, Rotation2d.fromDegrees(250.0));
 
-    shotFlywheelSpeedMap.put(5.2, 64.5);
-    shotFlywheelSpeedMap.put(4.4, 62.5);
-    shotFlywheelSpeedMap.put(4.2, 58.5);
-    shotFlywheelSpeedMap.put(3.9, 60.0);
-    shotFlywheelSpeedMap.put(3.5, 56.5);
+    shotFlywheelSpeedMap.put(5.2, 64.0);
+    shotFlywheelSpeedMap.put(4.4, 62.0);
+    shotFlywheelSpeedMap.put(4.2, 58.0);
+    shotFlywheelSpeedMap.put(3.9, 59.5);
+    shotFlywheelSpeedMap.put(3.5, 56.0);
     shotFlywheelSpeedMap.put(3.2, 55.5);
-    shotFlywheelSpeedMap.put(3.0, 56.0);
-    shotFlywheelSpeedMap.put(2.8, 55.0);
-    shotFlywheelSpeedMap.put(2.5, 54.5);
-    shotFlywheelSpeedMap.put(2.2, 52.5);
-    shotFlywheelSpeedMap.put(2.0, 49.0);
+    shotFlywheelSpeedMap.put(3.0, 55.0);
+    shotFlywheelSpeedMap.put(2.8, 54.0);
+    shotFlywheelSpeedMap.put(2.5, 53.5);
+    shotFlywheelSpeedMap.put(2.2, 52.0);
+    shotFlywheelSpeedMap.put(2.0, 48.5);
 
     timeOfFlightMap.put(1.0, 0.28);
   }
