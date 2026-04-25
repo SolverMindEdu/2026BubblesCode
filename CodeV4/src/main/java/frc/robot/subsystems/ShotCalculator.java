@@ -60,6 +60,8 @@ public class ShotCalculator extends SubsystemBase {
     passingShotHoodAngleMap.put(7.5, Rotation2d.fromDegrees(160.0));
     passingShotHoodAngleMap.put(8.5, Rotation2d.fromDegrees(230.0));
     passingShotHoodAngleMap.put(9.5, Rotation2d.fromDegrees(320.0));
+    passingShotHoodAngleMap.put(9.6, Rotation2d.fromDegrees(320.0));
+    passingShotFlywheelSpeedMap.put(9.6, 90.0);
     passingShotFlywheelSpeedMap.put(7.5, 70.0);
     passingShotFlywheelSpeedMap.put(8.5, 73.0);
     passingShotFlywheelSpeedMap.put(9.0, 80.0);
@@ -95,7 +97,7 @@ public class ShotCalculator extends SubsystemBase {
     shotFlywheelSpeedMap.put(5.2, 64.0);
     shotFlywheelSpeedMap.put(4.4, 62.0);
     shotFlywheelSpeedMap.put(4.2, 58.0);
-    shotFlywheelSpeedMap.put(3.9, 59.5);
+    shotFlywheelSpeedMap.put(3.9, 59.0);
     shotFlywheelSpeedMap.put(3.5, 56.0);
     shotFlywheelSpeedMap.put(3.2, 55.5);
     shotFlywheelSpeedMap.put(3.0, 55.0);
