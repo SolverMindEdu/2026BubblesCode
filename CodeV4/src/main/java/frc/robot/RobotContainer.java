@@ -162,6 +162,7 @@ public class RobotContainer {
         autoChooser.addOption("1Swipe+Depot Left", new PathPlannerAuto("1Swipe+DepotLeft"));
         autoChooser.addOption("Far 1.5 Swipe Left", new PathPlannerAuto("Far1.5SwipeLeft"));
         autoChooser.addOption("Middle Depot", new PathPlannerAuto("MiddleDepotAuto"));
+        autoChooser.addOption("FollowAutoRight", new PathPlannerAuto("1.5SwipeWaitRight"));
     }
 
     public boolean updateIdleStatus() {
@@ -371,7 +372,7 @@ public class RobotContainer {
                 hood.setTargetDegrees(Constants.Hood.MIN_DEG);
                 intakeSlapdown.up();
                 intakeRollers.stop();
-                indexer.stop();
+                indexer.stop(); 
                 kicker.stop();
                 shooterSubsystem.stop();
             }, hood, intakeSlapdown, intakeRollers, indexer, kicker, shooterSubsystem)

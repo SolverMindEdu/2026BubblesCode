@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0990562913907285,
+        "x": 1.7783258426966286,
         "y": 2.924230132450331
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3604139072847685,
+        "x": 2.0396834585906687,
         "y": 2.4232947019867552
       },
       "isLocked": false,
@@ -16,32 +16,32 @@
     },
     {
       "anchor": {
-        "x": 3.983997859692752,
-        "y": 2.5018149466192163
+        "x": 4.039058487874465,
+        "y": 2.514707560627676
       },
       "prevControl": {
-        "x": 3.2032041924742094,
-        "y": 2.5004537090364347
+        "x": 3.2582648206559224,
+        "y": 2.5133463230448942
       },
       "nextControl": {
-        "x": 4.764791526911295,
-        "y": 2.503176184201998
+        "x": 4.819852155093008,
+        "y": 2.5160687982104575
       },
       "isLocked": false,
       "linkedName": "CrossBumpP1"
     },
     {
       "anchor": {
-        "x": 5.03490301724138,
-        "y": 2.5018149466192163
+        "x": 5.190599144079885,
+        "y": 2.514707560627676
       },
       "prevControl": {
-        "x": 4.50627479652532,
-        "y": 2.5203901678009215
+        "x": 4.661970923363825,
+        "y": 2.533282781809381
       },
       "nextControl": {
-        "x": 5.56353123795744,
-        "y": 2.483239725437511
+        "x": 5.719227364795945,
+        "y": 2.4961323394459707
       },
       "isLocked": false,
       "linkedName": "CrossBumpP2"
@@ -167,21 +167,23 @@
         "nominalVoltage": 12.0,
         "unlimited": false
       }
+    },
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.8276353276353134,
+      "maxWaypointRelativePos": 2.303418803418767,
+      "constraints": {
+        "maxVelocity": 2.5,
+        "maxAcceleration": 2.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
     }
   ],
   "pointTowardsZones": [],
   "eventMarkers": [
-    {
-      "name": "IntakeDeploy",
-      "waypointRelativePos": 0.692579505300373,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "IntakeDeploy"
-        }
-      }
-    },
     {
       "name": "IntakeRun",
       "waypointRelativePos": 1.8091872791519288,
@@ -210,7 +212,7 @@
   "folder": "Right",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -143.86462338841082
+    "rotation": -154.89741053266135
   },
   "useDefaultConstraints": true
 }

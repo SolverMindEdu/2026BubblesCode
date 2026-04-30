@@ -16,32 +16,32 @@
     },
     {
       "anchor": {
-        "x": 3.708102016607355,
-        "y": 5.52514827995255
+        "x": 4.013181169757488,
+        "y": 5.658801711840229
       },
       "prevControl": {
-        "x": 2.927308349388812,
-        "y": 5.523787042369769
+        "x": 3.2323875025389457,
+        "y": 5.657440474257448
       },
       "nextControl": {
-        "x": 4.4888956838258975,
-        "y": 5.526509517535331
+        "x": 4.793974836976031,
+        "y": 5.66016294942301
       },
       "isLocked": false,
       "linkedName": "LeftCrossBumpP2"
     },
     {
       "anchor": {
-        "x": 5.090149006622516,
-        "y": 5.537806291390728
+        "x": 5.319985734664764,
+        "y": 5.658801711840229
       },
       "prevControl": {
-        "x": 4.561292528845994,
-        "y": 5.527624911661684
+        "x": 4.791129256888241,
+        "y": 5.648620332111185
       },
       "nextControl": {
-        "x": 6.227295258620691,
-        "y": 5.55969827586207
+        "x": 6.457131986662938,
+        "y": 5.680693696311571
       },
       "isLocked": false,
       "linkedName": "LeftCrossBumpP1"
@@ -171,17 +171,6 @@
   ],
   "pointTowardsZones": [],
   "eventMarkers": [
-    {
-      "name": "IntakeDeploy",
-      "waypointRelativePos": 0.23745583038872314,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "IntakeDeploy"
-        }
-      }
-    },
     {
       "name": "IntakeRun",
       "waypointRelativePos": 1.8091872791519288,
