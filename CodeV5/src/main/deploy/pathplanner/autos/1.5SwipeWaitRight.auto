@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "WaitSingleSwipe"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.3
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SingleSwipeFromWait"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootSingleSwipe"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ReturnBackToCENTRE"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Right",
+  "choreoAuto": false
+}
