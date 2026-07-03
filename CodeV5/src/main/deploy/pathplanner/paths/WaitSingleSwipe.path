@@ -1,0 +1,106 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.5574733096085422,
+        "y": 2.5018149466192163
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.557473309577699,
+        "y": 2.5018228006008503
+      },
+      "isLocked": false,
+      "linkedName": "StartingBump"
+    },
+    {
+      "anchor": {
+        "x": 6.07,
+        "y": 2.161937086092715
+      },
+      "prevControl": {
+        "x": 5.840981001586205,
+        "y": 2.269822068816569
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "waitendpointright"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 1,
+      "maxWaypointRelativePos": 1.95,
+      "constraints": {
+        "maxVelocity": 1.5,
+        "maxAcceleration": 2.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    },
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0,
+      "maxWaypointRelativePos": 0.7462897526501917,
+      "constraints": {
+        "maxVelocity": 3.0,
+        "maxAcceleration": 2.8,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    },
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 1.95,
+      "maxWaypointRelativePos": 2.0,
+      "constraints": {
+        "maxVelocity": 3.0,
+        "maxAcceleration": 2.8,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeDeploy",
+      "waypointRelativePos": 0.056537102473493056,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeDeploy"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.3,
+    "maxAcceleration": 2.9,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 45.0
+  },
+  "reversed": false,
+  "folder": "Right",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}
