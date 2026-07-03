@@ -18,7 +18,6 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -33,7 +32,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.LimelightHelpers;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -47,7 +45,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
-    RebuiltShiftLogic shiftLogic = new RebuiltShiftLogic();
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -56,7 +53,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
-    private boolean visionEnabled = true;
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -284,23 +280,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void periodic() {
         SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
 
-        var status = shiftLogic.getStatus();
-        SmartDashboard.putBoolean("HUB Active", status.isActive);
-        SmartDashboard.putNumber("Phase Countdown", status.countdown);
-        SmartDashboard.putNumber("Current Shift", status.currentShift);
-        SmartDashboard.putString("Phase", status.phaseName);
-        SmartDashboard.putString("Hub Color", status.isActive ? "GREEN" : "RED");
-        SmartDashboard.putString("Game Data", DriverStation.getGameSpecificMessage());
-
-    // if (visionEnabled) {
-    //     addPreferredLimelightVision();
-    // }
-
-    if (visionEnabled) {
-        addLimelightVision("limelight");
-        addLimelightVision("limelight-side");
-    }
-
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
                 DriverStation.getAlliance().ifPresent(allianceColor -> {
                     setOperatorPerspectiveForward(
@@ -313,89 +292,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             }
         
     }
-
-    // private void addPreferredLimelightVision() {
-    //     // Prefer front limelight
-    //     boolean frontAccepted = tryAddLimelightVision("limelight");
-
-    //     // Only use side limelight if front does NOT have a usable tag solution
-    //     if (!frontAccepted) {
-    //         tryAddLimelightVision("limelight-side");
-    //     } else {
-    //         SmartDashboard.putBoolean("limelight-side accepted", false);
-    //         SmartDashboard.putString("Vision/Source", "limelight");
-    //     }
-    // }
-
-    // private boolean tryAddLimelightVision(String limelightName) {
-    //     double headingDeg = getState().Pose.getRotation().getDegrees();
-    //     double omegaDegPerSec = Math.toDegrees(getState().Speeds.omegaRadiansPerSecond);
-
-    //     LimelightHelpers.SetRobotOrientation(
-    //         limelightName,
-    //         headingDeg,
-    //         0, 0, 0, 0, 0
-    //     );
-
-    //     LimelightHelpers.PoseEstimate mt2 =
-    //         LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
-
-    //     boolean reject = false;
-
-    //     if (Math.abs(omegaDegPerSec) > 360.0) {
-    //         reject = true;
-    //     }
-
-    //     if (mt2 == null || mt2.tagCount == 0) {
-    //         reject = true;
-    //     }
-
-    //     if (!reject) {
-    //         setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
-    //         addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
-
-    //         SmartDashboard.putBoolean(limelightName + " accepted", true);
-    //         SmartDashboard.putNumber(limelightName + " tagCount", mt2.tagCount);
-    //         SmartDashboard.putString("Vision/Source", limelightName);
-    //         return true;
-    //     }
-
-    //     SmartDashboard.putBoolean(limelightName + " accepted", false);
-    //     SmartDashboard.putNumber(limelightName + " tagCount", mt2 != null ? mt2.tagCount : 0);
-    //     return false;
-    // }
-
-    private void addLimelightVision(String limelightName) {
-        double headingDeg = getState().Pose.getRotation().getDegrees();
-        double omegaDegPerSec = Math.toDegrees(getState().Speeds.omegaRadiansPerSecond);
-
-        LimelightHelpers.SetRobotOrientation(
-            limelightName,
-            headingDeg,
-            0, 0, 0, 0, 0
-        );
-        LimelightHelpers.PoseEstimate mt2 =
-            LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
-
-        boolean reject = false;
-
-        if (Math.abs(omegaDegPerSec) > 360.0) {
-            reject = true;
-        }
-
-        if (mt2 == null || mt2.tagCount == 0) {
-            reject = true;
-        }
-
-        if (!reject) {
-            setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
-            addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
-        }
-
-        SmartDashboard.putBoolean(limelightName + " accepted", !reject);
-        SmartDashboard.putNumber(limelightName + " tagCount", mt2 != null ? mt2.tagCount : 0);
-    }
-        
 
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
