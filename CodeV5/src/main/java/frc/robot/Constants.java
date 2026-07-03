@@ -58,7 +58,7 @@ public final class Constants {
     }
 
     public static final class Indexer {
-        public static final int MOTOR_ID = 14;
+        public static final int MOTOR_ID = 4;
     }
 
     public static final class Kickers {
@@ -75,15 +75,6 @@ public final class Constants {
 
         public static final double CRUISE_VEL_RPS = 80.0;
         public static final double ACCEL_RPS2 = 80.0;
-    }
-
-    public static final class LED {
-      public static final int CANDLE_ID = 18;
-
-      public static final int START = 0;
-      public static final int END = 30;
-
-      public static final double REVERSE_STROBE_SECONDS = 0.4;
     }
 
     public class fieldPoses{

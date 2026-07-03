@@ -2,26 +2,18 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.sql.Driver;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -32,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -52,7 +45,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
-    private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -62,7 +54,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
         new SysIdRoutine.Config(
-             null,        // Use default ramp rate (1 V/s)
+            null,        // Use default ramp rate (1 V/s)
             Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
             null,        // Use default timeout (10 s)
             // Log state with SignalLogger class
@@ -139,7 +131,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-        configureAutoBuilder(); 
     }
 
     /**
@@ -164,16 +155,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-        configureAutoBuilder(); 
     }
-
-    public ChassisSpeeds getRobotRelativeSpeeds() {
-        return getState().Speeds;
-    }
-
-    public Pose2d getPose() {
-        return getState().Pose;
-    }    
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -207,41 +189,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    private void configureAutoBuilder() {
-        try{
-            var config = RobotConfig.fromGUISettings();
-            // Configure AutoBuilder last
-            AutoBuilder.configure(
-                this::getPose, // Robot pose supplier
-                this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
-                this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                (speeds, feedforwards) -> setControl(
-                        m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
-                            .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                            .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-                    ),
-                new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                        new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                        new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-                ),
-                config, // The robot configuration
-                () -> {
-                // Boolean supplier that controls when the path will be mirrored for the red alliance
-                // This will flip the path being followed to the red side of the field.
-                // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-                var alliance = DriverStation.getAlliance();
-                if (alliance.isPresent()) {
-                    return alliance.get() == DriverStation.Alliance.Red;
-                }
-                return false;
-                },
-                this // Reference to this subsystem to set requirements
-            );
-        } catch (Exception e) {
-        // Handle exception as needed
-        e.printStackTrace();
-        }
+    public Pose2d getPose() {
+        return getState().Pose;
     }
 
     /**
@@ -280,17 +229,23 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void periodic() {
         SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
 
-    if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-                DriverStation.getAlliance().ifPresent(allianceColor -> {
-                    setOperatorPerspectiveForward(
-                        allianceColor == Alliance.Red
-                            ? kRedAlliancePerspectiveRotation
-                            : kBlueAlliancePerspectiveRotation
-                    );
-                    m_hasAppliedOperatorPerspective = true;
-                });
-            }
-        
+        /*
+         * Periodically try to apply the operator perspective.
+         * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
+         * This allows us to correct the perspective in case the robot code restarts mid-match.
+         * Otherwise, only check and apply the operator perspective if the DS is disabled.
+         * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
+         */
+        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+            DriverStation.getAlliance().ifPresent(allianceColor -> {
+                setOperatorPerspectiveForward(
+                    allianceColor == Alliance.Red
+                        ? kRedAlliancePerspectiveRotation
+                        : kBlueAlliancePerspectiveRotation
+                );
+                m_hasAppliedOperatorPerspective = true;
+            });
+        }
     }
 
     private void startSimThread() {
