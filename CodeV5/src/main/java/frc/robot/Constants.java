@@ -58,7 +58,7 @@ public final class Constants {
     }
 
     public static final class Indexer {
-        public static final int MOTOR_ID = 4;
+        public static final int MOTOR_ID = 6;
     }
 
     public static final class Kickers {

@@ -24,7 +24,7 @@ public class TunerConstants {
     // The steer motor uses any SwerveModule.SteerRequestType control request with the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
     private static final Slot0Configs steerGains = new Slot0Configs()
-        .withKP(100).withKI(0).withKD(0.5)
+        .withKP(60).withKI(0).withKD(0.5)
         .withKS(0.1).withKV(2.05).withKA(0)
         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
     // When using closed-loop control, the drive motor uses the control
@@ -156,10 +156,12 @@ public class TunerConstants {
     private static final Distance kFrontRightYPos = Inches.of(-10.25);
 
     // Back Left
-    private static final int kBackLeftDriveMotorId = 4;
-    private static final int kBackLeftSteerMotorId = 3;
-    private static final int kBackLeftEncoderId = 11;
-    private static final Angle kBackLeftEncoderOffset = Rotations.of(0.404052734375);
+    // The back module CAN IDs are crossed relative to the Tuner X labels:
+    // the 5/14/13 module sits at the physical back-left corner
+    private static final int kBackLeftDriveMotorId = 14;
+    private static final int kBackLeftSteerMotorId = 5;
+    private static final int kBackLeftEncoderId = 13;
+    private static final Angle kBackLeftEncoderOffset = Rotations.of(0.439208984375);
     private static final boolean kBackLeftSteerMotorInverted = true;
     private static final boolean kBackLeftEncoderInverted = false;
 
@@ -167,10 +169,10 @@ public class TunerConstants {
     private static final Distance kBackLeftYPos = Inches.of(10.25);
 
     // Back Right
-    private static final int kBackRightDriveMotorId = 14;
-    private static final int kBackRightSteerMotorId = 5;
-    private static final int kBackRightEncoderId = 13;
-    private static final Angle kBackRightEncoderOffset = Rotations.of(0.439208984375);
+    private static final int kBackRightDriveMotorId = 4;
+    private static final int kBackRightSteerMotorId = 3;
+    private static final int kBackRightEncoderId = 11;
+    private static final Angle kBackRightEncoderOffset = Rotations.of(0.404052734375);
     private static final boolean kBackRightSteerMotorInverted = true;
     private static final boolean kBackRightEncoderInverted = false;
 

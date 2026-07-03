@@ -43,7 +43,7 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain =
         TunerConstants.createDrivetrain();
 
-    private double driveScale = 0.55;
+    private double driveScale = 0.2;
 
     private final IntakeSlapdownSubsystem intakeSlapdown = new IntakeSlapdownSubsystem();
     private final IntakeRollerSubsystem intakeRollers = new IntakeRollerSubsystem();
